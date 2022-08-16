@@ -14,6 +14,7 @@ using SRML.SR.Translation;
 using System.Runtime.InteropServices;
 using UnityEngine.UI;
 using SRML.SR.Utils;
+using SRML;
 
 namespace ShortcutLib
 {
@@ -1012,11 +1013,11 @@ namespace ShortcutLib
         /// </summary>
         public static class Registry
         {
-            public static void RegisterGadget(Gadget.Id enumId, string enumName)
-            { enumId = GadgetRegistry.CreateGadgetId(typeof(Gadget.Id), enumName); }
+            public static void RegisterGadget(string enumName)
+            { GadgetRegistry.CreateGadgetId(EnumPatcher.GetFirstFreeValue(typeof(Gadget.Id)), enumName); }
 
-            public static void RegisterIdent(Identifiable.Id enumId, string enumName)
-            { enumId = IdentifiableRegistry.CreateIdentifiableId(typeof(Identifiable.Id), enumName); }
+            public static void RegisterIdent(string enumName)
+            { IdentifiableRegistry.CreateIdentifiableId(EnumPatcher.GetFirstFreeValue(typeof(Identifiable.Id)), enumName); }
 
             public static void RegisterPedia(PediaDirector.Id pedia, Identifiable.Id id)
             { PediaRegistry.RegisterIdentifiableMapping(pedia, id); }
