@@ -95,5 +95,11 @@ namespace ShortcutLib
             else
                 ConsoleInstance.LogToFile(toLog);
         }
+
+        public static void Parent(GameObject obj, GameObject parent, bool worldPosition = true)
+        { obj.transform.SetParent(parent.transform, worldPosition); }
+
+        public static void Position(GameObject obj, Vector3 position)
+        { obj.transform.position = position; }
     }
 }

@@ -15,6 +15,9 @@ using System.Runtime.InteropServices;
 using UnityEngine.UI;
 using SRML.SR.Utils;
 using SRML;
+using System.Reflection;
+using SRML.SR.SaveSystem;
+using HarmonyLib;
 
 namespace ShortcutLib
 {
@@ -23,6 +26,216 @@ namespace ShortcutLib
     /// </summary>
     public class Shortcut
     {
+
+        /// <summary>
+        /// Style Methods [SHLIB]
+        /// </summary>
+        public static class Style
+        {
+            public static void CreateCosmetic(string podIDName, string podObject, string podParent, Vector3 podPosition, SlimeAppearance unlockableAppearance, SlimeDefinition unlockableDefinition, [Optional] Quaternion podRotation, bool keepOriginalName = true)
+            {
+                GameContext.Instance.DLCDirector.onPackageInstalled += delegate (DLCPackage.Id id)
+                {
+                    if (!Levels.isSpecial() && id == DLCPackage.Id.SECRET_STYLE)
+                    {
+                        if (podRotation == null)
+                        { podRotation = Quaternion.identity; }
+                        Transform PodParent = GameObject.Find(podParent).transform;
+                        GameObject PodObject = GameObjectUtils.InstantiateInactive(GameObject.Find(podObject), podPosition, podRotation, PodParent, keepOriginalName);
+                        string PodID = ModdedStringRegistry.ClaimID("pod", podIDName);
+                        PodObject.GetComponent<TreasurePod>().director = PodObject.GetComponentInParent<IdDirector>();
+                        PodObject.GetComponent<TreasurePod>().director.persistenceDict.Add(PodObject.GetComponent<TreasurePod>(), PodID);
+                        PodObject.GetComponent<TreasurePod>().unlockedSlimeAppearance = unlockableAppearance;
+                        PodObject.GetComponent<TreasurePod>().unlockedSlimeAppearanceDefinition = unlockableDefinition;
+                        DLCDirector.SECRET_STYLE_TREASURE_PODS.Add(PodID);
+                        PodObject.SetActive(true);
+                    }
+                };
+            }
+
+            public static SlimeAppearance CreateStyleAppearance(Identifiable.Id slimePrefab, SlimeDefinition slimeDefinition, string styleName)
+            {
+                SlimeAppearance StyledAppearance = Slime.GetSlimeApp(Slime.GetSlimeDef(slimePrefab));
+
+                StyledAppearance.NameXlateKey = "l.secret_style_" + styleName.ToLower().Replace(" ", "_");
+                Translate.TranslateActor(StyledAppearance.NameXlateKey, styleName);
+                StyledAppearance.SaveSet = SlimeAppearance.AppearanceSaveSet.SECRET_STYLE;
+                Registry.RegisterApp(slimeDefinition, Slime.GetSlimeDef(slimePrefab).AppearancesDefault[0], Slime.GetSlimeDef(slimePrefab).name);
+                Registry.RegisterStyle(slimeDefinition, StyledAppearance);
+
+                return StyledAppearance;
+            }
+        }
+
+        /// <summary>
+        /// Other Methods [SHLIB]
+        /// </summary>
+        public static class Other
+        {
+            public static UnityEngine.Object LoadAsset(Type assetType, AssetBundle assetBundle, string assetName)
+            { return assetBundle.LoadAsset(assetName, assetType); }
+
+            public static (LiquidDefinition, GameObject, Material) CreateLiquid(Identifiable.Id liquidPrefab, Identifiable.Id newLiquidID, string liquidName, Texture2D colorRamp, Color liquidColor, Color vacColor, Sprite liquidIcon)
+            {
+                // PREFAB
+                GameObject LiquidPrefab = PrefabUtils.CopyPrefab(SRSingleton<GameContext>.Instance.LookupDirector.GetPrefab(liquidPrefab));
+                LiquidDefinition liquidDefinition = ScriptableObject.CreateInstance<LiquidDefinition>();
+                GameObject liquidIncomingFX = Prefab.ObjectPrefab(SRSingleton<GameContext>.Instance.LookupDirector.GetLiquidIncomingFX(liquidPrefab));
+                GameObject liquidVacFailFX = Prefab.ObjectPrefab(SRSingleton<GameContext>.Instance.LookupDirector.GetLiquidVacFailFX(liquidPrefab));
+
+                LiquidPrefab.name = liquidName;
+                LiquidPrefab.GetComponent<Identifiable>().id = newLiquidID;
+                liquidDefinition.name = liquidName;
+
+                // MATERIAL
+                GameObject SpherePrefab = LiquidPrefab.FindChild("Sphere");
+                MeshRenderer LiquidRenderer = SpherePrefab.GetComponent<MeshRenderer>();
+                Material liquidMaterial = UnityEngine.Object.Instantiate(LiquidRenderer.sharedMaterial);
+                liquidMaterial.name = liquidName;
+                liquidMaterial.SetTexture("_ColorRamp", colorRamp);
+                LiquidRenderer.sharedMaterial = liquidMaterial;
+
+                // PARTICLE
+                GameObject fxWaterSplat = Prefab.ObjectPrefab(Internal.LoadResource<GameObject>("FX waterSplat"));
+                liquidIncomingFX.transform.Find("Water Glops").GetComponent<ParticleSystemRenderer>().sharedMaterial = LiquidPrefab.transform.Find("Sphere").GetComponent<MeshRenderer>().sharedMaterial;
+                var SprinklerSystemMain = LiquidPrefab.transform.Find("Sphere").Find("FX Sprinkler 1").GetComponent<ParticleSystem>().main;
+                var SprinklerSystemOvertime = LiquidPrefab.transform.Find("Sphere").Find("FX Sprinkler 1").GetComponent<ParticleSystem>().colorOverLifetime;
+                SprinklerSystemMain.startColor = new ParticleSystem.MinMaxGradient(liquidColor);
+                SprinklerSystemOvertime.color = new ParticleSystem.MinMaxGradient(liquidColor);
+
+                LiquidPrefab.transform.Find("Sphere").Find("FX Water Glops").GetComponent<ParticleSystemRenderer>().sharedMaterial = LiquidPrefab.transform.Find("Sphere").GetComponent<MeshRenderer>().sharedMaterial;
+                fxWaterSplat.transform.Find("Water Glops").GetComponent<ParticleSystemRenderer>().sharedMaterial = LiquidPrefab.transform.Find("Sphere").GetComponent<MeshRenderer>().sharedMaterial;
+
+                var MainSystemMain = fxWaterSplat.GetComponent<ParticleSystem>().main;
+                // var MainSystemMainOvertime = fxWaterSplat.GetComponent<ParticleSystem>().colorOverLifetime;
+
+                var HitSystemMain = fxWaterSplat.transform.Find("Hit").GetComponent<ParticleSystem>().main;
+                // var HitSystemOvertime = fxWaterSplat.transform.Find("Hit").GetComponent<ParticleSystem>().colorOverLifetime;
+
+                var BubblesSystemMain = fxWaterSplat.transform.Find("Bubbles").GetComponent<ParticleSystem>().main;
+                var BubblesSystemOvertime = fxWaterSplat.transform.Find("Bubbles").GetComponent<ParticleSystem>().colorOverLifetime;
+
+                var SparklesSystemMain = fxWaterSplat.transform.Find("Sparkles").GetComponent<ParticleSystem>().main;
+                // var SparklesSystemOvertime = fxWaterSplat.transform.Find("Sparkles").GetComponent<ParticleSystem>().colorOverLifetime;
+
+                var WaveSystemMain = fxWaterSplat.transform.Find("Wave").GetComponent<ParticleSystem>().main;
+                // var WaveSystemOvertime = fxWaterSplat.transform.Find("Wave").GetComponent<ParticleSystem>().colorOverLifetime;
+
+                MainSystemMain.startColor = new ParticleSystem.MinMaxGradient(liquidColor, new Color(liquidColor.r, liquidColor.g, liquidColor.b, 0));
+                // MainSystemMainOvertime.color = new ParticleSystem.MinMaxGradient(liquidColor, new Color(liquidColor.r, liquidColor.g, liquidColor.b, 0));
+
+                HitSystemMain.startColor = new ParticleSystem.MinMaxGradient(liquidColor, new Color(liquidColor.r, liquidColor.g, liquidColor.b, 0));
+                // HitSystemOvertime.color = new ParticleSystem.MinMaxGradient(liquidColor, new Color(liquidColor.r, liquidColor.g, liquidColor.b, 0));
+
+                BubblesSystemMain.startColor = new ParticleSystem.MinMaxGradient(liquidColor, new Color(liquidColor.r, liquidColor.g, liquidColor.b, 0));
+                BubblesSystemOvertime.color = new ParticleSystem.MinMaxGradient(liquidColor, new Color(liquidColor.r, liquidColor.g, liquidColor.b, 0));
+
+                SparklesSystemMain.startColor = new ParticleSystem.MinMaxGradient(liquidColor, new Color(liquidColor.r, liquidColor.g, liquidColor.b, 0));
+                // SparklesSystemOvertime.color = new ParticleSystem.MinMaxGradient(liquidColor, new Color(liquidColor.r, liquidColor.g, liquidColor.b, 0));
+
+                WaveSystemMain.startColor = new ParticleSystem.MinMaxGradient(liquidColor, new Color(liquidColor.r, liquidColor.g, liquidColor.b, 0));
+                // WaveSystemOvertime.color = new ParticleSystem.MinMaxGradient(liquidColor, new Color(liquidColor.r, liquidColor.g, liquidColor.b, 0));
+
+                LiquidPrefab.GetComponent<DestroyOnTouching>().destroyFX = fxWaterSplat;
+
+                // DEFINITION
+                typeof(LiquidDefinition).GetField("id", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(liquidDefinition, newLiquidID);
+                typeof(LiquidDefinition).GetField("inFX", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(liquidDefinition, liquidIncomingFX);
+                typeof(LiquidDefinition).GetField("vacFailFX", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(liquidDefinition, liquidVacFailFX);
+
+                // REGISTER
+                Identifiable.LIQUID_CLASS.Add(newLiquidID);
+                Translate.TranslatePedia("t." + newLiquidID.ToString().ToLower(), liquidName);
+                LookupRegistry.RegisterLiquid(liquidDefinition);
+                LookupRegistry.RegisterIdentifiablePrefab(LiquidPrefab);
+                LookupRegistry.RegisterVacEntry(newLiquidID, vacColor, liquidIcon);
+                AmmoRegistry.RegisterPlayerAmmo(PlayerState.AmmoMode.DEFAULT, newLiquidID);
+
+                return (liquidDefinition, LiquidPrefab, liquidMaterial);
+            }
+
+            public static GameObject CreateFountain(Identifiable.Id liquidObject, string fountainObject, string parent, string fountainName, Vector3 position, string dictionaryName)
+            {       
+                // OBJECT
+                GameObject ParentObject = GameObject.Find(parent);
+                GameObject FountainObject = GameObjectUtils.InstantiateInactive(GameObject.Find(fountainObject));
+                FountainObject.transform.parent = ParentObject.transform;
+                FountainObject.name = fountainName;
+                FountainObject.transform.position = position;
+
+                // LIQUID
+                LiquidSource componentInChildren = FountainObject.GetComponentInChildren<LiquidSource>();
+                componentInChildren.director = IdHandlerUtils.GlobalIdDirector;
+                componentInChildren.director.persistenceDict.Add(componentInChildren, dictionaryName);
+                componentInChildren.liquidId = liquidObject;
+                FountainObject.SetActive(true);
+
+                return FountainObject;
+            }
+
+            public static void ColorFountain(GameObject fountainObject, Color mainColor, Color mistColor, Color hitColor, Color dripsColor, Color waveColor, Color rippleColor, Color tinyDripsColor, Color glowColor, Color sparklesColor)
+            {
+                PooledSceneParticle ParticlePrefab = fountainObject.GetComponentInChildren<PooledSceneParticle>();
+                GameObject FountainParticle = Prefab.ObjectPrefab(ParticlePrefab.particlePrefab);
+
+                var MainSystemMain = FountainParticle.GetComponent<ParticleSystem>().main;
+                // var MainSystemMainOvertime = FountainParticle.GetComponent<ParticleSystem>().colorOverLifetime;
+
+                var MistSystemMain = FountainParticle.transform.Find("Mist").GetComponent<ParticleSystem>().main;
+                var MistSystemOvertime = FountainParticle.transform.Find("Mist").GetComponent<ParticleSystem>().colorOverLifetime;
+
+                var HitSystemMain = FountainParticle.transform.Find("Hit").GetComponent<ParticleSystem>().main;
+                // var HitSystemOvertime = FountainParticle.transform.Find("Hit").GetComponent<ParticleSystem>().colorOverLifetime;
+
+                var DripsSystemMain = FountainParticle.transform.Find("Drips").GetComponent<ParticleSystem>().main;
+                // var DripsSystemOvertime = FountainParticle.transform.Find("Drips").GetComponent<ParticleSystem>().colorOverLifetime;
+
+                var WaveSystemMain = FountainParticle.transform.Find("Wave").GetComponent<ParticleSystem>().main;
+                // var WaveSystemOvertime = FountainParticle.transform.Find("Wave").GetComponent<ParticleSystem>().colorOverLifetime;
+
+                var RippleSystemMain = FountainParticle.transform.Find("Ripple").GetComponent<ParticleSystem>().main;
+                // var RippleSystemOvertime = FountainParticle.transform.Find("Ripple").GetComponent<ParticleSystem>().colorOverLifetime;
+
+                var TinyDripsSystemMain = FountainParticle.transform.Find("Tiny Drips").GetComponent<ParticleSystem>().main;
+                var TinyDripsSystemOvertime = FountainParticle.transform.Find("Tiny Drips").GetComponent<ParticleSystem>().colorOverLifetime;
+
+                var GlowSystemMain = FountainParticle.transform.Find("Glow").GetComponent<ParticleSystem>().main;
+                // var GlowSystemOvertime = FountainParticle.transform.Find("Glow").GetComponent<ParticleSystem>().colorOverLifetime;
+
+                var SparklesSystemMain = FountainParticle.transform.Find("Sparkles").GetComponent<ParticleSystem>().main;
+                var SparklesSystemOvertime = FountainParticle.transform.Find("Sparkles").GetComponent<ParticleSystem>().colorOverLifetime;
+
+                MainSystemMain.startColor = new ParticleSystem.MinMaxGradient(mainColor, new Color(mainColor.r, mainColor.g, mainColor.b, 0));
+                // MainSystemMainOvertime.color = new ParticleSystem.MinMaxGradient(mainColor, new Color(mainColor.r, mainColor.g, mainColor.b, 0));
+
+                MistSystemMain.startColor = new ParticleSystem.MinMaxGradient(mistColor, new Color(mistColor.r, mistColor.g, mistColor.b, 0));
+                MistSystemOvertime.color = new ParticleSystem.MinMaxGradient(mistColor, new Color(mistColor.r, mistColor.g, mistColor.b, 0));
+
+                HitSystemMain.startColor = new ParticleSystem.MinMaxGradient(hitColor, new Color(hitColor.r, hitColor.g, hitColor.b, 0));
+                // HitSystemOvertime.color = new ParticleSystem.MinMaxGradient(hitColor, new Color(hitColor.r, hitColor.g, hitColor.b, 0));
+
+                DripsSystemMain.startColor = new ParticleSystem.MinMaxGradient(dripsColor, new Color(dripsColor.r, dripsColor.g, dripsColor.b, 0));
+                // DripsSystemOvertime.color = new ParticleSystem.MinMaxGradient(dripsColor, new Color(dripsColor.r, dripsColor.g, dripsColor.b, 0));
+
+                WaveSystemMain.startColor = new ParticleSystem.MinMaxGradient(waveColor, new Color(waveColor.r, waveColor.g, waveColor.b, 0));
+                // WaveSystemOvertime.color = new ParticleSystem.MinMaxGradient(waveColor, new Color(waveColor.r, waveColor.g, waveColor.b, 0));
+
+                RippleSystemMain.startColor = new ParticleSystem.MinMaxGradient(rippleColor, new Color(rippleColor.r, rippleColor.g, rippleColor.b, 0));
+                // RippleSystemOvertime.color = new ParticleSystem.MinMaxGradient(rippleColor, new Color(rippleColor.r, rippleColor.g, rippleColor.b, 0));
+
+                TinyDripsSystemMain.startColor = new ParticleSystem.MinMaxGradient(tinyDripsColor, new Color(tinyDripsColor.r, tinyDripsColor.g, tinyDripsColor.b, 0));
+                TinyDripsSystemOvertime.color = new ParticleSystem.MinMaxGradient(tinyDripsColor, new Color(tinyDripsColor.r, tinyDripsColor.g, tinyDripsColor.b, 0));
+
+                GlowSystemMain.startColor = new ParticleSystem.MinMaxGradient(glowColor, new Color(glowColor.r, glowColor.g, glowColor.b, 0));
+                // GlowSystemOvertime.color = new ParticleSystem.MinMaxGradient(glowColor, new Color(glowColor.r, glowColor.g, glowColor.b, 0));
+
+                SparklesSystemMain.startColor = new ParticleSystem.MinMaxGradient(sparklesColor, new Color(sparklesColor.r, sparklesColor.g, sparklesColor.b, 0));
+                SparklesSystemOvertime.color = new ParticleSystem.MinMaxGradient(sparklesColor, new Color(sparklesColor.r, sparklesColor.g, sparklesColor.b, 0));
+
+                ParticlePrefab.particlePrefab = FountainParticle;
+            }
+        }
+
         /// <summary>
         /// EatMap Methods [SHLIB]
         /// </summary>
@@ -173,6 +386,49 @@ namespace ShortcutLib
                 slimeAppearance.Structures[structureNum].DefaultMaterials[0] = material;
                 return slimeAppearance.Structures[0].DefaultMaterials[0];
             }
+
+            public static (GameObject, SlimeAppearanceObject, SlimeAppearance.SlimeBone[]) CreateBasicStructure(AssetBundle assetBundle, string bundledAsset, string objectName, SlimeAppearance.SlimeBone rootBone, SlimeAppearance.SlimeBone parentBone, SlimeAppearance.SlimeBone[] attachedBones, RubberBoneEffect.RubberType rubberType, bool rubberBoneEffect = true, bool usesMeshRenderer = false)
+            {
+                GameObject assetObject = assetBundle.LoadAsset<GameObject>(bundledAsset);
+                GameObject slimeAppearanceObject = new GameObject(objectName);
+                slimeAppearanceObject.Prefabitize();
+                if (usesMeshRenderer)
+                { slimeAppearanceObject.AddComponent<MeshFilter>(); slimeAppearanceObject.AddComponent<MeshRenderer>(); }
+                else
+                {
+                    slimeAppearanceObject.AddComponent<SkinnedMeshRenderer>();
+                    slimeAppearanceObject.GetComponent<SkinnedMeshRenderer>().sharedMesh = assetObject.GetComponentInChildren<MeshFilter>().sharedMesh;
+                }
+                slimeAppearanceObject.AddComponent<SlimeAppearanceObject>();
+                slimeAppearanceObject.GetComponent<SlimeAppearanceObject>().AttachRubberBoneEffect = rubberBoneEffect;
+                slimeAppearanceObject.GetComponent<SlimeAppearanceObject>().RootBone = rootBone;
+                slimeAppearanceObject.GetComponent<SlimeAppearanceObject>().ParentBone = parentBone;
+                slimeAppearanceObject.GetComponent<SlimeAppearanceObject>().RubberType = rubberType;
+                slimeAppearanceObject.GetComponent<SlimeAppearanceObject>().AttachedBones = attachedBones;
+
+                return (slimeAppearanceObject, slimeAppearanceObject.GetComponent<SlimeAppearanceObject>(), attachedBones);
+            }
+
+            public static SlimeAppearanceElement SetStructureElement(SlimeAppearance slimeAppearance, SlimeAppearanceObject[] objectPrefabs, int structureNum, bool addToArray = true, bool supportFaces = false)
+            {
+                if (addToArray)
+                {
+                    slimeAppearance.Structures = slimeAppearance.Structures.AddToArray(slimeAppearance.Structures[0].Clone());
+                }
+                SlimeAppearanceElement ObjectElement = ScriptableObject.CreateInstance<SlimeAppearanceElement>();
+                slimeAppearance.Structures[structureNum].Element = ObjectElement;
+                slimeAppearance.Structures[structureNum].Element.Prefabs = objectPrefabs;
+                slimeAppearance.Structures[structureNum].SupportsFaces = supportFaces;
+
+                return ObjectElement;
+            }
+
+            public static SlimeAppearanceObject SetStructurePrefab(SlimeAppearance slimeAppearance, SlimeAppearanceObject objectPrefab, int structureNum, int prefabsNum, bool addToArray = false)
+            {
+                if (addToArray)
+                { slimeAppearance.Structures[structureNum].Element.Prefabs = slimeAppearance.Structures[structureNum].Element.Prefabs.AddToArray(objectPrefab); }
+                return slimeAppearance.Structures[structureNum].Element.Prefabs[prefabsNum] = objectPrefab; 
+            }
         }
 
         /// <summary>
@@ -234,7 +490,7 @@ namespace ShortcutLib
                 return MeatPrefab;
             }
 
-            public static GameObject CreateFood(Identifiable.Id cropPrefab, Identifiable.Id newCropID, string newCropName, Sprite icon, Texture2D rampGreen, Texture2D rampRed, Texture2D rampBlue, Texture2D rampBlack, Color vacColor, [Optional] Vector3 foodSize, Vacuumable.Size vacSetting = Vacuumable.Size.NORMAL, bool isVeggie = false, bool isFruit = false, bool isPogoFruit = false, bool isCarrot = false)
+            public static (GameObject, Material) CreateFood(Identifiable.Id cropPrefab, Identifiable.Id newCropID, string newCropName, Sprite icon, Texture2D rampGreen, Texture2D rampRed, Texture2D rampBlue, Texture2D rampBlack, Color vacColor, [Optional] Vector3 foodSize, Vacuumable.Size vacSetting = Vacuumable.Size.NORMAL, bool isVeggie = false, bool isFruit = false, bool isPogoFruit = false, bool isCarrot = false)
             {
                 Vector3 pogofruitDefault = new Vector3(0.25f, 0.25f, 0.25f);
                 Vector3 carrotDefault = new Vector3(2.0f, 2.0f, 2.0f);
@@ -277,7 +533,7 @@ namespace ShortcutLib
                 LookupRegistry.RegisterIdentifiablePrefab(CropPrefab);
                 Registry.RegisterPedia(PediaDirector.Id.RESOURCES, newCropID);
 
-                return CropPrefab;
+                return (CropPrefab, CropMat);
             }
 
             public static GameObject CreateGarden(SpawnResource.Id spawnResourcePrefab, SpawnResource.Id newSpawnResourceID, string newSpawnResourceName, GameObject[] spawnOptions, [Optional] GameObject[] additionalSpawnOptions, Identifiable.Id newFoodID, Identifiable.Id newSproutID = Identifiable.Id.NONE, bool additionalFoods = false, float minSpawn = 10f, float maxSpawn = 20f, float minSpawnTime = 5f, float maxSpawnTime = 10f, float bonusFoodChance = 1f, int minBonusSpawn = 3)
@@ -324,7 +580,7 @@ namespace ShortcutLib
                 return SpawnPrefab;
             }
 
-            public static GameObject CreateCrate(Identifiable.Id cratePrefab, Identifiable.Id newCrateID, string newCrateName, [Optional] Color crateColor, Identifiable.Id crateMaterial = Identifiable.Id.CRATE_REEF_01, Texture2D crateTexture = null, bool textureCrate = false, int minSpawn = 3, int maxSpawn = 6, Vacuumable.Size vacSetting = Vacuumable.Size.LARGE)
+            public static GameObject CreateCrate(Identifiable.Id cratePrefab, Identifiable.Id newCrateID, string newCrateName, [Optional] Color crateColor, Identifiable.Id crateMaterial = Identifiable.Id.CRATE_REEF_01, Texture2D crateTexture = null, bool hasCustomMaterial = false, bool textureCrate = false, int minSpawn = 3, int maxSpawn = 6, Vacuumable.Size vacSetting = Vacuumable.Size.LARGE)
             {
                 GameObject CratePrefab = Prefab.QuickPrefab(cratePrefab);
                 CratePrefab.name = newCrateName;
@@ -334,9 +590,12 @@ namespace ShortcutLib
                 CratePrefab.GetComponent<BreakOnImpact>().minSpawns = minSpawn;
                 CratePrefab.GetComponent<BreakOnImpact>().maxSpawns = maxSpawn;
 
-                GameObject crateMatPrefab = Prefab.QuickPrefab(crateMaterial);
-                CratePrefab.GetComponent<MeshRenderer>().material = UnityEngine.Object.Instantiate<Material>(crateMatPrefab.GetComponent<MeshRenderer>().material);
-                CratePrefab.GetComponent<MeshRenderer>().material.SetColor("_Color", crateColor);
+                if (hasCustomMaterial)
+                {
+                    GameObject crateMatPrefab = Prefab.QuickPrefab(crateMaterial);
+                    CratePrefab.GetComponent<MeshRenderer>().material = UnityEngine.Object.Instantiate(crateMatPrefab.GetComponent<MeshRenderer>().material);
+                    CratePrefab.GetComponent<MeshRenderer>().material.SetColor("_Color", crateColor);
+                }
 
                 if (textureCrate)
                 { CratePrefab.GetComponent<MeshRenderer>().material.SetTexture("_MainTex", crateTexture); }
@@ -515,6 +774,46 @@ namespace ShortcutLib
         /// </summary>
         public static class Spawner
         {
+            public static (GameObject, DirectedActorSpawner.SpawnConstraint[]) CreateSlimeSpawner(string nodeObject, string nodeParent, Vector3 nodePosition, DirectedActorSpawner.TimeMode timeMode, SlimeSet.Member[] members, [Optional] Quaternion nodeRotation, bool enableStacking = false, bool spawnFeral = false, bool spawnAgitated = false, float spawnerRadius = 5f, float defaultWeight = 1f, int targetSpawnCount = 10, float spawnDelay = 1f, float minSpawnTime = 0, float maxSpawnTime = 24)
+            {
+                DirectedActorSpawner.SpawnConstraint[] constraints = new DirectedActorSpawner.SpawnConstraint[]
+                {
+                    new DirectedActorSpawner.SpawnConstraint()
+                    {
+                        window = new DirectedActorSpawner.TimeWindow()
+                        {
+                            timeMode = timeMode,
+                            endHour = maxSpawnTime,
+                            startHour = minSpawnTime
+                        },
+                        slimeset = new SlimeSet()
+                        {
+                            members = members
+                        },
+                        feral = spawnFeral,
+                        maxAgitation = spawnAgitated,
+                        weight = defaultWeight
+                    }
+                };
+
+                if (nodeRotation == null)
+                { nodeRotation = Quaternion.identity; }
+
+                GameObject.Find(nodeParent).GetComponent<CellDirector>().targetSlimeCount = targetSpawnCount;
+                GameObject slimeNode = GameObjectUtils.InstantiateInactive(GameObject.Find(nodeObject));
+                slimeNode.transform.parent = GameObject.Find(nodeParent).transform;
+                slimeNode.transform.position = nodePosition;
+                slimeNode.transform.rotation = nodeRotation;
+                slimeNode.GetComponent<DirectedSlimeSpawner>().constraints = constraints;
+                slimeNode.GetComponent<DirectedSlimeSpawner>().allowDirectedSpawns = true;
+                slimeNode.GetComponent<DirectedSlimeSpawner>().spawnDelayFactor = spawnDelay;
+                slimeNode.GetComponent<DirectedSlimeSpawner>().enableToteming = enableStacking;
+                slimeNode.GetComponent<DirectedSlimeSpawner>().radius = spawnerRadius;
+                slimeNode.SetActive(true);
+
+                return (slimeNode, constraints);
+            }
+
             public static void SlimeSpawner(Identifiable.Id slimeBeingSpawned, float weight, ZoneDirector.Zone location)
             {
                 SRCallbacks.PreSaveGameLoad += (s =>
@@ -533,7 +832,7 @@ namespace ShortcutLib
                             new SlimeSet.Member
                             {
                                 prefab = GameContext.Instance.LookupDirector.GetPrefab(slimeBeingSpawned),
-                                weight = weight // The higher the value is the more often your slime will spawn
+                                weight = weight
                             }
                         };
                             constraint.slimeset.members = members.ToArray();
@@ -560,7 +859,7 @@ namespace ShortcutLib
                             new SlimeSet.Member
                             {
                                 prefab = GameContext.Instance.LookupDirector.GetPrefab(actorBeingSpawned),
-                                weight = weight // The higher the value is the more often your slime will spawn
+                                weight = weight
                             }
                         };
                             constraint.slimeset.members = members.ToArray();
@@ -587,7 +886,7 @@ namespace ShortcutLib
                             new SlimeSet.Member
                             {
                                 prefab = GameContext.Instance.LookupDirector.GetPrefab(meatBeingSpawned),
-                                weight = weight // The higher the value is the more often your slime will spawn
+                                weight = weight
                             }
                         };
                             constraint.slimeset.members = members.ToArray();
@@ -606,7 +905,6 @@ namespace ShortcutLib
                     {
                         if (spawnResource.ObjectsToSpawn.Contains(FoodPrefab))
                         {
-
                             spawnResource.ObjectsToSpawn = new GameObject[] { foodObject };
                             spawnResources.Add(spawnResource);
                         }
@@ -636,6 +934,12 @@ namespace ShortcutLib
 
             public static UnityEngine.Object Instantiate(UnityEngine.Object objectToCopy)
             { return UnityEngine.Object.Instantiate(objectToCopy); }
+
+            public static void Destroy(UnityEngine.Object objectToDestroy)
+            { UnityEngine.Object.Destroy(objectToDestroy); }
+
+            public static void PermanentDestroy(UnityEngine.Object objectToDestroy, string source)
+            { Destroyer.Destroy(objectToDestroy, source); }
         }
 
         /// <summary>
@@ -681,6 +985,7 @@ namespace ShortcutLib
                 else if (AmmoColor == new Color32(0, 0, 0, 0))
                 { AmmoColor = vacColor; }
 
+                slimeAppearance.name = newSlimeName;
                 slimeAppearance.Face.OnEnable();
                 slimeAppearance.Icon = newIcon;
                 slimeAppearance.ColorPalette = new SlimeAppearance.Palette
@@ -737,16 +1042,13 @@ namespace ShortcutLib
                 return slimeAppearance.Structures[0].DefaultMaterials[0];
             }
 
-            public static GameObject CreatePlort(Identifiable.Id plortPrefab, Identifiable.Id newPlortID, string newPlortName, Sprite newIcon, Color32 vacColor, Identifiable.Id plortMaterial = Identifiable.Id.PINK_PLORT, float plortPrice = 12, float plortSaturation = 5, Vacuumable.Size vacSetting = Vacuumable.Size.NORMAL)
+            public static GameObject CreatePlort(Identifiable.Id plortPrefab, Identifiable.Id newPlortID, string newPlortName, Sprite newIcon, Color32 vacColor, float plortPrice = 12, float plortSaturation = 5, Vacuumable.Size vacSetting = Vacuumable.Size.NORMAL)
             {
                 GameObject plortObject = Prefab.QuickPrefab(plortPrefab);
                 plortObject.name = newPlortName;
 
                 plortObject.GetComponent<Identifiable>().id = newPlortID;
                 plortObject.GetComponent<Vacuumable>().size = vacSetting;
-
-                GameObject plortMatPrefab = Prefab.QuickPrefab(plortMaterial);
-                plortObject.GetComponent<MeshRenderer>().material = UnityEngine.Object.Instantiate<Material>(plortMatPrefab.GetComponent<MeshRenderer>().material);
 
                 Translate.TranslateActor("l." + newPlortID.ToString().ToLower(), newPlortName);
                 AmmoRegistry.RegisterAmmoPrefab(PlayerState.AmmoMode.DEFAULT, plortObject);
@@ -765,9 +1067,15 @@ namespace ShortcutLib
                 return plortObject;
             }
 
-            public static GameObject ColorPlort(Identifiable.Id plortPrefab, Color Color1, Color Color2, Color Color3, [Optional] Color RockColor1, [Optional] Color RockColor2, [Optional] Color RockColor3, bool hasRocks = false)
+            public static GameObject ColorPlort(Identifiable.Id plortPrefab, Color Color1, Color Color2, Color Color3, [Optional] Identifiable.Id plortMaterial, [Optional] Color RockColor1, [Optional] Color RockColor2, [Optional] Color RockColor3, bool hasRocks = false)
             {
                 GameObject PlortPrefab = Prefab.GetPrefab(plortPrefab);
+
+                if (plortMaterial == Identifiable.Id.NONE)
+                { plortMaterial = Identifiable.Id.PINK_PLORT; }
+
+                Material plortMatPrefab = Prefab.QuickPrefab(plortMaterial).GetComponent<MeshRenderer>().material;
+                PlortPrefab.GetComponent<MeshRenderer>().material = plortMatPrefab;
 
                 PlortPrefab.GetComponent<MeshRenderer>().material.SetColor("_TopColor", Color1);
                 PlortPrefab.GetComponent<MeshRenderer>().material.SetColor("_MiddleColor", Color2);
@@ -783,7 +1091,7 @@ namespace ShortcutLib
                 return PlortPrefab;
             }
 
-            public static (SlimeDefinition, GameObject) CreateGordo(Identifiable.Id gordoPrefab, Identifiable.Id basePrefab, Identifiable.Id newGordoID, Sprite newGordoIcon, string newGordoName, string mapMarkerName, ZoneDirector.Zone gordoZone, int feedCount, GameObject gordoReward1, GameObject gordoReward2, GameObject gordoReward3, Vacuumable.Size vacSetting = Vacuumable.Size.LARGE)
+            public static (SlimeDefinition, GameObject) CreateGordo(Identifiable.Id gordoPrefab, Identifiable.Id basePrefab, Identifiable.Id newGordoID, Sprite newGordoIcon, string newGordoName, string mapMarkerName, ZoneDirector.Zone gordoZone, int feedCount, List<GameObject> gordoRewards, Vacuumable.Size vacSetting = Vacuumable.Size.LARGE)
             {
                 GameObject GordoPrefab = Prefab.ObjectPrefab(Slime.GetGordo(gordoPrefab));
                 GordoPrefab.name = newGordoName;
@@ -824,17 +1132,10 @@ namespace ShortcutLib
                 eat.slimeDefinition = oldDefinition;
                 eat.targetCount = feedCount;
 
-                List<GameObject> rewards = new List<GameObject>()
-                {
-                    gordoReward1,
-                    gordoReward2,
-                    gordoReward3
-                };
-
-                GordoRewards gordoRewards = GordoPrefab.GetComponent<GordoRewards>();
-                gordoRewards.rewardPrefabs = rewards.ToArray();
-                gordoRewards.slimePrefab = GameContext.Instance.LookupDirector.GetPrefab(basePrefab);
-                gordoRewards.rewardOverrides = new GordoRewards.RewardOverride[0];
+                GordoRewards GordoRewards = GordoPrefab.GetComponent<GordoRewards>();
+                GordoRewards.rewardPrefabs = gordoRewards.ToArray();
+                GordoRewards.slimePrefab = GameContext.Instance.LookupDirector.GetPrefab(basePrefab);
+                GordoRewards.rewardOverrides = new GordoRewards.RewardOverride[0];
 
                 GameObject child = GordoPrefab.transform.Find("Vibrating/slime_gordo").gameObject;
                 SkinnedMeshRenderer render = child.GetComponent<SkinnedMeshRenderer>();
@@ -847,7 +1148,7 @@ namespace ShortcutLib
                 Identifiable.GORDO_CLASS.Add(newGordoID);
                 LookupRegistry.RegisterGordo(GordoPrefab);
 
-                return (null, null);
+                return (oldDefinition, GordoPrefab);
             }
         }
 
@@ -1033,6 +1334,23 @@ namespace ShortcutLib
 
             public static void RegisterSnare(Identifiable.Id id)
             { SnareRegistry.RegisterAsSnareable(id); }
+
+            public static void RegisterDrone(Identifiable.Id id)
+            { DroneRegistry.RegisterBasicTarget(id); }
+
+            public static void RegisterDef(SlimeDefinition definition, bool refreshEatMaps = false)
+            { SlimeRegistry.RegisterSlimeDefinition(definition, refreshEatMaps); }
+
+            public static void RegisterApp(SlimeDefinition definition, SlimeAppearance appearance, [Optional] string appearanceName)
+            {
+                if (appearanceName == null)
+                { appearance.NameXlateKey = "l.classic_" + appearance.name.ToLower().Replace(" ", "_"); Translate.TranslateActor(appearance.NameXlateKey, appearance.name); }
+                else { appearance.NameXlateKey = "l.classic_" + appearanceName.ToLower().Replace(" ", "_"); Translate.TranslateActor(appearance.NameXlateKey, appearanceName); }
+                SlimeRegistry.RegisterAppearance(definition, appearance);
+            }
+
+            public static void RegisterStyle(SlimeDefinition definition, SlimeAppearance appearance)
+            { StyleRegistry.RegisterSecretStyle(definition, appearance); }
 
             public static void RegisterFarmSlot([Optional] GameObject toRegister, [Optional] GameObject toRegisterDeluxe, Identifiable.Id foodId)
             {
