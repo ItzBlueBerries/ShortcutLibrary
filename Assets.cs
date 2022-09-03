@@ -31,29 +31,13 @@ namespace ShortcutLib
             sampleTexture.LoadImage(byteArray);
             return sampleTexture;
         }
-    }
 
-    internal static class Internal
-    {
         private static Dictionary<Type, UnityEngine.Object[]> cache = new Dictionary<Type, UnityEngine.Object[]>();
-
-        internal static T LoadResource<T>(string name) where T : UnityEngine.Object
+        public static T LoadResource<T>(string name) where T : UnityEngine.Object
         {
             if (!cache.ContainsKey(typeof(T)))
                 cache[typeof(T)] = Resources.FindObjectsOfTypeAll<T>();
             return (T)cache[typeof(T)].FirstOrDefault(x => x.name == name);
-        }
-
-        internal static void AddAndRemoveWhere<T>(this ListAsset<T> list, T value, Func<T, T, bool> cond)
-        {
-            List<T> list2 = (from x in list
-                             where cond(value, x)
-                             select x).ToList<T>();
-            foreach (T item in list2)
-            {
-                list.items.Remove(item);
-            }
-            list.items.Add(value);
         }
     }
 }

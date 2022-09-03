@@ -26,7 +26,6 @@ namespace ShortcutLib
     /// </summary>
     public class Shortcut
     {
-
         /// <summary>
         /// Style Methods [SHLIB]
         /// </summary>
@@ -75,6 +74,79 @@ namespace ShortcutLib
             public static UnityEngine.Object LoadAsset(Type assetType, AssetBundle assetBundle, string assetName)
             { return assetBundle.LoadAsset(assetName, assetType); }
 
+            public static GameObject CreateMeshObject(string objectName, Mesh objectMesh, Type colliderType, [Optional] Material meshMaterial, [Optional] Vector3 meshSize, bool usesSkinnedRenderer = false, bool hasDelaunchTrigger = true)
+            {
+                if (meshSize == new Vector3(0f, 0f, 0f))
+                    meshSize = new Vector3(1f, 1f, 1f);
+
+                GameObject MeshObject = new GameObject(objectName);
+                MeshObject.Prefabitize();
+
+                if (usesSkinnedRenderer)
+                {
+                    MeshObject.AddComponent<SkinnedMeshRenderer>().sharedMesh = objectMesh;
+                    MeshObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial = meshMaterial;
+                }
+                else
+                {
+                    MeshObject.AddComponent<MeshFilter>().sharedMesh = objectMesh;
+                    MeshObject.AddComponent<MeshRenderer>().sharedMaterial = meshMaterial;
+                }
+
+                MeshObject.AddComponent(colliderType);
+                MeshObject.layer = LayerMask.NameToLayer("Actor");
+
+                if (hasDelaunchTrigger)
+                    Prefab.ObjectPrefab(Prefab.GetPrefab(Identifiable.Id.PINK_SLIME).FindChild("DelaunchTrigger(Clone)")).transform.parent = MeshObject.transform;
+
+                MeshObject.transform.localScale = meshSize;
+
+                return MeshObject;
+            }
+
+            public static (Color[], Color[]) CreateChroma(Sprite chromaIcon, RanchDirector.Palette newPaletteID, string newPaletteName, Color[] darkColors, Color[] lightColors, ProgressDirector.ProgressType progressType = ProgressDirector.ProgressType.NONE, int partnerLevel = 0, int progressCount = 0, int order = 0)
+            {
+                if (darkColors.Length < 8)
+                    throw new NullReferenceException("Please have at least 8 colors in your Dark Colors Array. (This includes Light Colors)");
+                if (darkColors.Length > 8)
+                    throw new NullReferenceException("Please don't have more than 8 colors in your Dark Colors Array. (This includes Light Colors)");
+                if (lightColors.Length < 8)
+                    throw new NullReferenceException("Please have at least 8 colors in your Light Colors Array. (This includes Dark Colors)");
+                if (lightColors.Length > 8)
+                    throw new NullReferenceException("Please don't have more than 8 colors in your Light Colors Array. (This includes Dark Colors)");
+
+                ChromaRegistry.RegisterPaletteEntry(
+                    new RanchDirector.PaletteEntry()
+                    {
+                        icon = chromaIcon,
+                        palette = newPaletteID,
+                        requiresPartnerLevel = partnerLevel,
+                        requiresProgressCount = progressCount,
+                        requiresProgressType = progressType,
+                        order = order,
+                        blackDark = darkColors[0],
+                        blueDark = darkColors[1],
+                        cyanDark = darkColors[2],
+                        greenDark = darkColors[3],
+                        magentaDark = darkColors[4],
+                        redDark = darkColors[5],
+                        whiteDark = darkColors[6],
+                        yellowDark = darkColors[7],
+                        blackLight = lightColors[0],
+                        blueLight = lightColors[1],
+                        cyanLight = lightColors[2],
+                        greenLight = lightColors[3],
+                        magentaLight = lightColors[4],
+                        redLight = lightColors[5],
+                        whiteLight = lightColors[6],
+                        yellowLight = lightColors[7]
+                    }
+                );
+                Translate.TranslatePedia("m.palette.name." + newPaletteID.ToString().ToLower(), newPaletteName);
+
+                return (darkColors, lightColors);
+            }
+
             public static (LiquidDefinition, GameObject, Material) CreateLiquid(Identifiable.Id liquidPrefab, Identifiable.Id newLiquidID, string liquidName, Texture2D colorRamp, Color liquidColor, Color vacColor, Sprite liquidIcon)
             {
                 // PREFAB
@@ -96,7 +168,7 @@ namespace ShortcutLib
                 LiquidRenderer.sharedMaterial = liquidMaterial;
 
                 // PARTICLE
-                GameObject fxWaterSplat = Prefab.ObjectPrefab(Internal.LoadResource<GameObject>("FX waterSplat"));
+                GameObject fxWaterSplat = Prefab.ObjectPrefab(Assets.LoadResource<GameObject>("FX waterSplat"));
                 liquidIncomingFX.transform.Find("Water Glops").GetComponent<ParticleSystemRenderer>().sharedMaterial = LiquidPrefab.transform.Find("Sphere").GetComponent<MeshRenderer>().sharedMaterial;
                 var SprinklerSystemMain = LiquidPrefab.transform.Find("Sphere").Find("FX Sprinkler 1").GetComponent<ParticleSystem>().main;
                 var SprinklerSystemOvertime = LiquidPrefab.transform.Find("Sphere").Find("FX Sprinkler 1").GetComponent<ParticleSystem>().colorOverLifetime;
@@ -155,7 +227,7 @@ namespace ShortcutLib
             }
 
             public static GameObject CreateFountain(Identifiable.Id liquidObject, string fountainObject, string parent, string fountainName, Vector3 position, string dictionaryName)
-            {       
+            {
                 // OBJECT
                 GameObject ParentObject = GameObject.Find(parent);
                 GameObject FountainObject = GameObjectUtils.InstantiateInactive(GameObject.Find(fountainObject));
@@ -393,7 +465,7 @@ namespace ShortcutLib
                 GameObject slimeAppearanceObject = new GameObject(objectName);
                 slimeAppearanceObject.Prefabitize();
                 if (usesMeshRenderer)
-                { slimeAppearanceObject.AddComponent<MeshFilter>(); slimeAppearanceObject.AddComponent<MeshRenderer>(); }
+                { slimeAppearanceObject.AddComponent<MeshFilter>(); slimeAppearanceObject.AddComponent<MeshRenderer>(); slimeAppearanceObject.GetComponent<MeshFilter>().sharedMesh = assetObject.GetComponentInChildren<MeshFilter>().sharedMesh; }
                 else
                 {
                     slimeAppearanceObject.AddComponent<SkinnedMeshRenderer>();
@@ -1320,6 +1392,9 @@ namespace ShortcutLib
             public static void RegisterIdent(string enumName)
             { IdentifiableRegistry.CreateIdentifiableId(EnumPatcher.GetFirstFreeValue(typeof(Identifiable.Id)), enumName); }
 
+            public static void RegisterIdentPrefab(GameObject prefab)
+            { LookupRegistry.RegisterIdentifiablePrefab(prefab); }
+
             public static void RegisterPedia(PediaDirector.Id pedia, Identifiable.Id id)
             { PediaRegistry.RegisterIdentifiableMapping(pedia, id); }
 
@@ -1351,6 +1426,9 @@ namespace ShortcutLib
 
             public static void RegisterStyle(SlimeDefinition definition, SlimeAppearance appearance)
             { StyleRegistry.RegisterSecretStyle(definition, appearance); }
+
+            public static void RegisterVac(Color vacColor, Identifiable.Id toBeRegistered, Sprite vacIcon, string definitionName = "")
+            { LookupRegistry.RegisterVacEntry(new VacItemDefinition() { color = vacColor, id = toBeRegistered, icon = vacIcon, name = definitionName }); }
 
             public static void RegisterFarmSlot([Optional] GameObject toRegister, [Optional] GameObject toRegisterDeluxe, Identifiable.Id foodId)
             {
