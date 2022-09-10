@@ -74,6 +74,12 @@ namespace ShortcutLib
             public static UnityEngine.Object LoadAsset(Type assetType, AssetBundle assetBundle, string assetName)
             { return assetBundle.LoadAsset(assetName, assetType); }
 
+            public static Color LoadHex(string hexCode)
+            {
+                ColorUtility.TryParseHtmlString(hexCode, out var returnedColor);
+                return returnedColor;
+            }
+
             public static GameObject CreateMeshObject(string objectName, Mesh objectMesh, Type colliderType, [Optional] Material meshMaterial, [Optional] Vector3 meshSize, bool usesSkinnedRenderer = false, bool hasDelaunchTrigger = true)
             {
                 if (meshSize == new Vector3(0f, 0f, 0f))
@@ -356,6 +362,7 @@ namespace ShortcutLib
             {
                 GameObject ToyPrefab = Prefab.QuickPrefab(toyPrefab);
 
+                ToyPrefab.name = newToyName;
                 ToyPrefab.GetComponent<Identifiable>().id = newToyID;
                 ToyPrefab.GetComponent<Vacuumable>().size = vacSetting;
 
@@ -481,7 +488,7 @@ namespace ShortcutLib
                 return (slimeAppearanceObject, slimeAppearanceObject.GetComponent<SlimeAppearanceObject>(), attachedBones);
             }
 
-            public static SlimeAppearanceElement SetStructureElement(SlimeAppearance slimeAppearance, SlimeAppearanceObject[] objectPrefabs, int structureNum, bool addToArray = true, bool supportFaces = false)
+            public static SlimeAppearanceElement SetStructureElement(string elementName, SlimeAppearance slimeAppearance, SlimeAppearanceObject[] objectPrefabs, int structureNum, bool addToArray = true, bool supportFaces = false)
             {
                 if (addToArray)
                 {
@@ -489,6 +496,7 @@ namespace ShortcutLib
                 }
                 SlimeAppearanceElement ObjectElement = ScriptableObject.CreateInstance<SlimeAppearanceElement>();
                 slimeAppearance.Structures[structureNum].Element = ObjectElement;
+                slimeAppearance.Structures[structureNum].Element.Name = elementName;
                 slimeAppearance.Structures[structureNum].Element.Prefabs = objectPrefabs;
                 slimeAppearance.Structures[structureNum].SupportsFaces = supportFaces;
 
@@ -608,7 +616,7 @@ namespace ShortcutLib
                 return (CropPrefab, CropMat);
             }
 
-            public static GameObject CreateGarden(SpawnResource.Id spawnResourcePrefab, SpawnResource.Id newSpawnResourceID, string newSpawnResourceName, GameObject[] spawnOptions, [Optional] GameObject[] additionalSpawnOptions, Identifiable.Id newFoodID, Identifiable.Id newSproutID = Identifiable.Id.NONE, bool additionalFoods = false, float minSpawn = 10f, float maxSpawn = 20f, float minSpawnTime = 5f, float maxSpawnTime = 10f, float bonusFoodChance = 1f, int minBonusSpawn = 3)
+            public static GameObject CreateGarden(SpawnResource.Id spawnResourcePrefab, SpawnResource.Id newSpawnResourceID, string newSpawnResourceName, GameObject[] spawnOptions, [Optional] GameObject[] additionalSpawnOptions, Identifiable.Id newFoodID, bool additionalFoods = false, float minSpawn = 10f, float maxSpawn = 20f, float minSpawnTime = 5f, float maxSpawnTime = 10f, float bonusFoodChance = 1f, int minBonusSpawn = 3)
             {
                 GameObject SpawnPrefab = PrefabUtils.CopyPrefab(SRSingleton<GameContext>.Instance.LookupDirector.GetResourcePrefab(spawnResourcePrefab));
                 SpawnPrefab.name = newSpawnResourceName;
@@ -629,24 +637,15 @@ namespace ShortcutLib
 
                 foreach (GameObject sprout in SpawnPrefab.FindChildren("Sprout"))
                 {
-                    if (newSproutID == Identifiable.Id.NONE)
-                    {
-                        GameObject SproutGameObject = SRSingleton<GameContext>.Instance.LookupDirector.GetPrefab(newFoodID).FindChildWithPartialName("model_", false);
-                        sprout.GetComponent<MeshFilter>().sharedMesh = SproutGameObject.GetComponent<MeshFilter>().sharedMesh;
-                        sprout.GetComponent<MeshRenderer>().sharedMaterial = SproutGameObject.GetComponent<MeshRenderer>().sharedMaterial;
-                    }
-                    else
-                    {
-                        GameObject SproutGameObject = SRSingleton<GameContext>.Instance.LookupDirector.GetPrefab(newSproutID).FindChildWithPartialName("model_", false);
-                        sprout.GetComponent<MeshFilter>().sharedMesh = SproutGameObject.GetComponent<MeshFilter>().sharedMesh;
-                        sprout.GetComponent<MeshRenderer>().sharedMaterial = SproutGameObject.GetComponent<MeshRenderer>().sharedMaterial;
-                    }
+                    GameObject SproutGameObject = SRSingleton<GameContext>.Instance.LookupDirector.GetPrefab(newFoodID);
+                    sprout.GetComponent<MeshFilter>().sharedMesh = SproutGameObject.GetComponentInChildren<MeshFilter>().sharedMesh;
+                    sprout.GetComponent<MeshRenderer>().sharedMaterial = SproutGameObject.GetComponentInChildren<MeshRenderer>().sharedMaterial;
                 }
                 foreach (Joint joint in SpawnResource.SpawnJoints)
                 {
-                    GameObject FoodGameObject = SRSingleton<GameContext>.Instance.LookupDirector.GetPrefab(newFoodID).FindChildWithPartialName("model_", false);
-                    joint.gameObject.GetComponent<MeshFilter>().sharedMesh = FoodGameObject.GetComponent<MeshFilter>().sharedMesh;
-                    joint.gameObject.GetComponent<MeshRenderer>().sharedMaterial = FoodGameObject.GetComponent<MeshRenderer>().sharedMaterial;
+                    GameObject FoodGameObject = SRSingleton<GameContext>.Instance.LookupDirector.GetPrefab(newFoodID);
+                    joint.gameObject.GetComponent<MeshFilter>().sharedMesh = FoodGameObject.GetComponentInChildren<MeshFilter>().sharedMesh;
+                    joint.gameObject.GetComponent<MeshRenderer>().sharedMaterial = FoodGameObject.GetComponentInChildren<MeshRenderer>().sharedMaterial;
                 }
 
                 return SpawnPrefab;
@@ -760,16 +759,16 @@ namespace ShortcutLib
                 else { GadgetPrefab.GetComponent<Extractor>().infiniteCycles = infiniteCycles; }
 
                 Sprite GadgetIcon = newIcon;
-                LookupRegistry.RegisterGadget(new GadgetDefinition
-                {
-                    prefab = GadgetPrefab,
-                    id = newGadgetID,
-                    pediaLink = PediaDirector.Id.EXTRACTORS,
-                    blueprintCost = extractorCost,
-                    buyCountLimit = extractorBuyLimit,
-                    icon = GadgetIcon,
-                    craftCosts = craftCosts
-                });
+                GadgetDefinition GadgetDef = ScriptableObject.CreateInstance<GadgetDefinition>();
+                GadgetDef.prefab = GadgetPrefab;
+                GadgetDef.id = newGadgetID;
+                GadgetDef.pediaLink = PediaDirector.Id.EXTRACTORS;
+                GadgetDef.blueprintCost = extractorCost;
+                GadgetDef.buyCountLimit = extractorBuyLimit;
+                GadgetDef.icon = GadgetIcon;
+                GadgetDef.craftCosts = craftCosts;
+
+                LookupRegistry.RegisterGadget(GadgetDef);
 
                 Gadget.EXTRACTOR_CLASS.Add(newGadgetID);
 
@@ -780,24 +779,43 @@ namespace ShortcutLib
                 return GadgetPrefab;
             }
 
-            public static void ColorExtractor(Gadget.Id newExtractorId, Color firstColor, Color secondColor, Color thirdColor, Color fourthColor, bool isApiary = false, bool isPump = false, bool isDrill = false)
+            public static void ColorExtractor(Gadget.Id newExtractorId, Color32[] mainColors, Color32[] extColors1, Color32[] extColors2, int extrIndex, bool isApiary = false, bool isPump = false, bool isDrill = false)
             {
-                GameObject NewGadgetPrefab = Prefab.ObjectPrefab(GetGadgetDef(newExtractorId).prefab);
+                if (mainColors.Length < 8)
+                    throw new NullReferenceException("Please have at least 8 colors in your Main Colors Array. (This includes Ext Colors)");
+                if (mainColors.Length > 8)
+                    throw new NullReferenceException("Please don't have more than 8 colors in your Main Colors Array. (This includes Ext Colors)");
+                if (extColors1.Length < 8)
+                    throw new NullReferenceException("Please have at least 8 colors in your Ext Colors (1) Array. (This includes Main/Ext Colors)");
+                if (extColors1.Length > 8)
+                    throw new NullReferenceException("Please don't have more than 8 colors in your Ext Colors (1) Array. (This includes Main/Ext Colors)");
+                if (extColors2.Length < 8)
+                    throw new NullReferenceException("Please have at least 8 colors in your Ext Colors (2) Array. (This includes Main/Ext Colors)");
+                if (extColors2.Length > 8)
+                    throw new NullReferenceException("Please don't have more than 8 colors in your Ext Colors (2) Array. (This includes Main/Ext Colors)");
+
+                GameObject NewGadgetPrefab = GetGadgetDef(newExtractorId).prefab;
 
                 string ext23 = "none";
-                string extr = "none";
+                string extr;
 
-                if (isApiary)
-                { ext23 = "ext_apiary23"; extr = "ext_r1"; }
+                string[] index = new string[]
+                {
+                    "ext_r1",
+                    "ext_r2",
+                    "ext_r3"
+                };
+
+                extr = index[extrIndex];
+
+                if (isApiary)  
+                { ext23 = "ext_apiary23";}
 
                 if (isPump)
-                { ext23 = "ext_pump23"; extr = "ext_r3"; }
+                { ext23 = "ext_pump23"; }
 
                 if (isDrill)
-                { ext23 = "ext_drill23"; extr = "ext_r2"; }
-
-                if (firstColor == null && secondColor == null && thirdColor == null && fourthColor == null)
-                { firstColor = Color.white; secondColor = Color.black; thirdColor = Color.white; fourthColor = Color.black; }
+                { ext23 = "ext_drill23"; }
 
                 NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material = (Material)Prefab.Instantiate(NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material);
                 NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material = (Material)Prefab.Instantiate(NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material);
@@ -805,39 +823,39 @@ namespace ShortcutLib
 
                 // recolor x4 shader thingy (core)
                 // red
-                NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color00", firstColor);
-                NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color01", firstColor);
+                NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color00", mainColors[0]);
+                NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color01", mainColors[1]);
                 // green
-                NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color10", secondColor);
-                NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color11", secondColor);
+                NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color10", mainColors[2]);
+                NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color11", mainColors[3]);
                 // blue
-                NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color20", thirdColor);
-                NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color21", thirdColor);
+                NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color20", mainColors[4]);
+                NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color21", mainColors[5]);
                 // black
-                NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color30", fourthColor);
-                NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color31", fourthColor);
+                NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color30", mainColors[6]);
+                NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color31", mainColors[7]);
 
                 // recolor x4 shader thingy (ext)
                 // red
-                NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color00", firstColor);
-                NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color01", firstColor);
-                NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color00", firstColor);
-                NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color01", firstColor);
+                NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color00", extColors1[0]);
+                NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color01", extColors1[1]);
+                NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color00", extColors2[0]);
+                NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color01", extColors2[1]);
                 // green
-                NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color10", secondColor);
-                NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color11", secondColor);
-                NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color10", secondColor);
-                NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color11", secondColor);
+                NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color10", extColors1[2]);
+                NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color11", extColors1[3]);
+                NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color10", extColors2[2]);
+                NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color11", extColors2[3]);
                 // blue
-                NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color20", thirdColor);
-                NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color21", thirdColor);
-                NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color20", thirdColor);
-                NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color21", thirdColor);
+                NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color20", extColors1[4]);
+                NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color21", extColors1[5]);
+                NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color20", extColors2[4]);
+                NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color21", extColors2[5]);
                 // black
-                NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color30", fourthColor);
-                NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color31", fourthColor);
-                NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color30", fourthColor);
-                NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color31", fourthColor);
+                NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color30", extColors1[6]);
+                NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color31", extColors1[7]);
+                NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color30", extColors2[6]);
+                NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color31", extColors2[7]);
             }
         }
 
@@ -871,7 +889,8 @@ namespace ShortcutLib
                 if (nodeRotation == null)
                 { nodeRotation = Quaternion.identity; }
 
-                GameObject.Find(nodeParent).GetComponent<CellDirector>().targetSlimeCount = targetSpawnCount;
+                if (GameObject.Find(nodeParent).GetComponent<CellDirector>() != null)
+                    GameObject.Find(nodeParent).GetComponent<CellDirector>().targetSlimeCount = targetSpawnCount;
                 GameObject slimeNode = GameObjectUtils.InstantiateInactive(GameObject.Find(nodeObject));
                 slimeNode.transform.parent = GameObject.Find(nodeParent).transform;
                 slimeNode.transform.position = nodePosition;
@@ -1163,7 +1182,7 @@ namespace ShortcutLib
                 return PlortPrefab;
             }
 
-            public static (SlimeDefinition, GameObject) CreateGordo(Identifiable.Id gordoPrefab, Identifiable.Id basePrefab, Identifiable.Id newGordoID, Sprite newGordoIcon, string newGordoName, string mapMarkerName, ZoneDirector.Zone gordoZone, int feedCount, List<GameObject> gordoRewards, Vacuumable.Size vacSetting = Vacuumable.Size.LARGE)
+            public static (SlimeDefinition, GameObject) CreateGordo(Identifiable.Id gordoPrefab, Identifiable.Id basePrefab, Identifiable.Id newGordoID, Sprite newGordoIcon, string newGordoName, string mapMarkerName, ZoneDirector.Zone gordoZone, int feedCount, List<GameObject> gordoRewards, Vacuumable.Size vacSetting = Vacuumable.Size.GIANT)
             {
                 GameObject GordoPrefab = Prefab.ObjectPrefab(Slime.GetGordo(gordoPrefab));
                 GordoPrefab.name = newGordoName;
@@ -1335,6 +1354,7 @@ namespace ShortcutLib
             public static GameObject CreateFashion(Sprite icon, string fashionName, Identifiable.Id fashionPrefab, Identifiable.Id fashionId, GameObject clipOnPrefab, Color vacColor, Fashion.Slot slot = Fashion.Slot.FRONT)
             {
                 GameObject FashionPrefab = Prefab.QuickPrefab(fashionPrefab);
+                FashionPrefab.name = fashionName;
 
                 FashionPrefab.GetComponent<Identifiable>().id = fashionId;
                 FashionPrefab.GetComponent<Fashion>().slot = slot;
@@ -1361,16 +1381,16 @@ namespace ShortcutLib
                 PodPrefab.GetComponent<FashionPod>().fashionId = fashionId;
 
                 GadgetRegistry.RegisterBlueprintLock(newPodID, (GadgetDirector x) => x.CreateBasicLock(newPodID, Gadget.Id.NONE, zoneUnlock, unlockTime));
-                LookupRegistry.RegisterGadget(new GadgetDefinition
-                {
-                    prefab = PodPrefab,
-                    id = newPodID,
-                    blueprintCost = podCost,
-                    buyCountLimit = podLimit,
-                    icon = newIcon,
-                    pediaLink = PediaDirector.Id.CURIOS,
-                    craftCosts = craftCost
-                });
+                GadgetDefinition GadgetDef = ScriptableObject.CreateInstance<GadgetDefinition>();
+                GadgetDef.prefab = PodPrefab;
+                GadgetDef.id = newPodID;
+                GadgetDef.blueprintCost = podCost;
+                GadgetDef.buyCountLimit = podLimit;
+                GadgetDef.icon = newIcon;
+                GadgetDef.pediaLink = PediaDirector.Id.CURIOS;
+                GadgetDef.craftCosts = craftCost;
+
+                LookupRegistry.RegisterGadget(GadgetDef);
 
                 Gadget.FASHION_POD_CLASS.Add(newPodID);
 
@@ -1378,6 +1398,98 @@ namespace ShortcutLib
                 GadgetTranslationExtensions.GetTranslation(newPodID).SetNameTranslation(newPodName).SetDescriptionTranslation(newPodDesc);
 
                 return PodPrefab;
+            }
+        }
+
+        public static class Definition
+        {
+            public static GadgetDefinition CreateGadDefinition(GameObject prefab, Gadget.Id id, Sprite icon, PediaDirector.Id pediaLink, GadgetDefinition.CraftCost[] craftCosts, Gadget.Id[] countOtherIds, int countLimit, int blueprintCost, int buyCountLimit, bool destroyOnRemoval, bool buyInPairs)
+            {
+                GadgetDefinition GadgetDefinition = ScriptableObject.CreateInstance<GadgetDefinition>();
+
+                GadgetDefinition.prefab = prefab;
+                GadgetDefinition.id = id;
+                GadgetDefinition.icon = icon;
+                GadgetDefinition.pediaLink = pediaLink;
+                GadgetDefinition.craftCosts = craftCosts;
+                GadgetDefinition.countLimit = countLimit;
+                GadgetDefinition.countOtherIds = countOtherIds;
+                GadgetDefinition.blueprintCost = blueprintCost;
+                GadgetDefinition.buyCountLimit = buyCountLimit;
+                GadgetDefinition.destroyOnRemoval = destroyOnRemoval;
+                GadgetDefinition.buyInPairs = buyInPairs;
+
+                return GadgetDefinition;
+            }
+
+            public static VacItemDefinition CreateVacDefinition(string name, Identifiable.Id id, Sprite icon, Color color)
+            {
+                VacItemDefinition VacItemDefinition = ScriptableObject.CreateInstance<VacItemDefinition>();
+
+                VacItemDefinition.name = name;
+                VacItemDefinition.id = id;
+                VacItemDefinition.icon = icon;
+                VacItemDefinition.color = color;
+
+                return VacItemDefinition;
+            }
+
+            public static SlimeDefinition CreateSlimeDefinition(string Name, Identifiable.Id IdentifiableId, bool IsLargo, bool CanLargofy, SlimeAppearance[] AppearancesDefault, SlimeDiet Diet, Identifiable.Id[] FavoriteToys, GameObject BaseModule, SlimeDefinition[] BaseSlimes, GameObject[] SlimeModules, SlimeSounds Sounds, float PrefabScale, [Optional] List<SlimeAppearance> AppearancesDynamic, bool dynamicAppearance = false)
+            {
+                SlimeDefinition SlimeDefinition = ScriptableObject.CreateInstance<SlimeDefinition>();
+
+                SlimeDefinition.Name = Name;
+                SlimeDefinition.IdentifiableId = IdentifiableId;
+                SlimeDefinition.IsLargo = IsLargo;
+                SlimeDefinition.CanLargofy = CanLargofy;
+                SlimeDefinition.AppearancesDefault = AppearancesDefault;
+                SlimeDefinition.Diet = Diet;
+                SlimeDefinition.FavoriteToys = FavoriteToys;
+                SlimeDefinition.BaseModule = BaseModule;
+                SlimeDefinition.BaseSlimes = BaseSlimes;
+                SlimeDefinition.SlimeModules = SlimeModules;
+                SlimeDefinition.Sounds = Sounds;
+                SlimeDefinition.PrefabScale = PrefabScale;
+                if (dynamicAppearance)
+                {
+                    SlimeDefinition.AppearancesDynamic = AppearancesDynamic;
+                }
+
+                return SlimeDefinition;
+            }
+
+            public static ToyDefinition CreateToyDefinition(Identifiable.Id toyId, string nameKey, Sprite icon, int cost)
+            {
+                ToyDefinition ToyDefinition = ScriptableObject.CreateInstance<ToyDefinition>();
+
+                ToyDefinition.toyId = toyId;
+                ToyDefinition.nameKey = nameKey;
+                ToyDefinition.icon = icon;
+                ToyDefinition.cost = cost;
+
+                return ToyDefinition;
+            }
+
+            public static UpgradeDefinition CreateUpgradeDefinition(PlayerState.Upgrade upgrade, Sprite icon, int cost)
+            {
+                UpgradeDefinition UpgradeDefinition = ScriptableObject.CreateInstance<UpgradeDefinition>();
+
+                UpgradeDefinition.upgrade = upgrade;
+                UpgradeDefinition.icon = icon;
+                UpgradeDefinition.cost = cost;
+
+                return UpgradeDefinition;
+            }
+
+            public static LiquidDefinition CreateLiquidDefinition(Identifiable.Id id, GameObject inFx, GameObject vacFailFx)
+            {
+                LiquidDefinition LiquidDefinition = ScriptableObject.CreateInstance<LiquidDefinition>();
+
+                LiquidDefinition.id = id;
+                LiquidDefinition.inFX = inFx;
+                LiquidDefinition.vacFailFX = vacFailFx;
+
+                return LiquidDefinition;
             }
         }
 
@@ -1428,7 +1540,15 @@ namespace ShortcutLib
             { StyleRegistry.RegisterSecretStyle(definition, appearance); }
 
             public static void RegisterVac(Color vacColor, Identifiable.Id toBeRegistered, Sprite vacIcon, string definitionName = "")
-            { LookupRegistry.RegisterVacEntry(new VacItemDefinition() { color = vacColor, id = toBeRegistered, icon = vacIcon, name = definitionName }); }
+            {
+                VacItemDefinition vacDef = ScriptableObject.CreateInstance<VacItemDefinition>();
+                vacDef.name = definitionName;
+                vacDef.color = vacColor;
+                vacDef.icon = vacIcon;
+                vacDef.id = toBeRegistered;
+
+                LookupRegistry.RegisterVacEntry(vacDef); 
+            }
 
             public static void RegisterFarmSlot([Optional] GameObject toRegister, [Optional] GameObject toRegisterDeluxe, Identifiable.Id foodId)
             {

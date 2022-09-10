@@ -16,17 +16,14 @@ using System.Reflection;
 
 namespace ShortcutLib
 {
-    public class Main : ModEntryPoint
+    internal class Main : ModEntryPoint
     {
         public override void PreLoad()
         {
             HarmonyInstance.PatchAll();
         }
 
-        public override void Load()
-        {
-
-        }
+        public override void Load() { }
 
         public override void PostLoad()
         {

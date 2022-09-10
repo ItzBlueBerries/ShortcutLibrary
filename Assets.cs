@@ -32,6 +32,12 @@ namespace ShortcutLib
             return sampleTexture;
         }
 
+        public static AssetBundle LoadBundle(string bundlePath)
+        {
+            AssetBundle bundle = AssetBundle.LoadFromFile($"{Environment.CurrentDirectory}\\" + bundlePath);
+            return bundle;
+        }
+
         private static Dictionary<Type, UnityEngine.Object[]> cache = new Dictionary<Type, UnityEngine.Object[]>();
         public static T LoadResource<T>(string name) where T : UnityEngine.Object
         {
