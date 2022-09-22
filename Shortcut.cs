@@ -18,6 +18,7 @@ using SRML;
 using System.Reflection;
 using SRML.SR.SaveSystem;
 using HarmonyLib;
+using UnityEngine.Events;
 
 namespace ShortcutLib
 {
@@ -26,6 +27,37 @@ namespace ShortcutLib
     /// </summary>
     public class Shortcut
     {
+        /// <summary>
+        /// Gameplay Methods [SHLIB]
+        /// </summary>
+        public static class Gameplay
+        {
+            public static GameObject GetPlot(LandPlot.Id plotId)
+            { return GameContext.Instance.LookupDirector.GetPlotPrefab(plotId); }
+
+            public static LandPlotUpgradeRegistry.UpgradeShopEntry CreatePlotUpgrade(string upgradeName, string upgradeDescription, LandPlot.Upgrade upgradeId, int upgradeCost, Sprite upgradeIcon, LandPlot.Upgrade unlockedUpgradeId = LandPlot.Upgrade.NONE, PediaDirector.Id landPlotPediaId = PediaDirector.Id.CORRAL, string landPlotName = "corral", string upgradeWarning = "This is a default warning!!", bool isAvailableEnabled = true, bool isUnlockedEnabled = false, bool holdToPurchase = false, bool shouldWarn = false)
+            {
+                LandPlotUpgradeRegistry.UpgradeShopEntry UpgradeEntry = new LandPlotUpgradeRegistry.UpgradeShopEntry();
+                UpgradeEntry.cost = upgradeCost;
+                UpgradeEntry.icon = upgradeIcon;
+                UpgradeEntry.LandPlotName = landPlotName;
+                UpgradeEntry.landplotPediaId = landPlotPediaId;
+                if (isUnlockedEnabled)
+                    UpgradeEntry.isUnlocked = ((LandPlot x) => !x.HasUpgrade(unlockedUpgradeId));
+                if (isAvailableEnabled)
+                    UpgradeEntry.isAvailable = ((LandPlot x) => !x.HasUpgrade(upgradeId));
+                UpgradeEntry.mainImg = upgradeIcon;
+                UpgradeEntry.upgrade = upgradeId;
+                UpgradeEntry.holdtopurchase = holdToPurchase;
+                if (shouldWarn)
+                    UpgradeEntry.warning = upgradeWarning;
+                Translate.TranslatePedia("m.upgrade.name." + landPlotPediaId.ToString().ToLower() + "." + upgradeId.ToString().ToLower(), upgradeName);
+                Translate.TranslatePedia("m.upgrade.desc." + landPlotPediaId.ToString().ToLower() + "." + upgradeId.ToString().ToLower(), upgradeDescription);
+
+                return UpgradeEntry;
+            }
+        }
+
         /// <summary>
         /// Style Methods [SHLIB]
         /// </summary>

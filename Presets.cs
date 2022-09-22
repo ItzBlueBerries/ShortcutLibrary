@@ -1,5 +1,6 @@
 ﻿using MonomiPark.SlimeRancher.Regions;
 using ShortcutLib;
+using SRML.SR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -78,4 +79,31 @@ public static class ExtensionsMethods
 
     public static void LogChilds(this GameObject gameObject, bool logToFile = true)
     { Debugging.LogChildren(gameObject, logToFile); }
+
+    public static void ColorFace(this SlimeAppearance appearance, Color eyeRed, Color eyeGreen, Color eyeBlue, Color mouthTop, Color mouthMid, Color mouthBot)
+    {
+        SlimeExpressionFace[] expressionFaces = appearance.Face.ExpressionFaces;
+        for (int k = 0; k < expressionFaces.Length; k++)
+        {
+            SlimeExpressionFace slimeExpressionFace = expressionFaces[k];
+            if ((bool)slimeExpressionFace.Mouth)
+            {
+                slimeExpressionFace.Mouth.SetColor("_MouthBot", mouthBot);
+                slimeExpressionFace.Mouth.SetColor("_MouthMid", mouthMid);
+                slimeExpressionFace.Mouth.SetColor("_MouthTop", mouthTop);
+            }
+            if ((bool)slimeExpressionFace.Eyes)
+            {
+                slimeExpressionFace.Eyes.SetColor("_EyeRed", eyeRed);
+                slimeExpressionFace.Eyes.SetColor("_EyeGreen", eyeGreen);
+                slimeExpressionFace.Eyes.SetColor("_EyeBlue", eyeBlue);
+            }
+        }
+        appearance.Face.OnEnable();
+    }
+
+    public static void RegisterUpgrade<T>(this LandPlotUpgradeRegistry.UpgradeShopEntry plotUpgradeRegistry) where T : LandPlotUI
+    {
+        LandPlotUpgradeRegistry.RegisterPurchasableUpgrade<T>(plotUpgradeRegistry);
+    }
 }
