@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ShortcutLib.Components
 {
-    internal class ShortcutBehaviour : SRBehaviour
+    public class ShortcutBehaviour : SRBehaviour
     {
 
     }
