@@ -1,14 +1,18 @@
-﻿using System;
+﻿global using SRML;
+global using SRML.SR;
+global using UnityEngine;
+global using ShortcutLib.Extras;
+global using ShortcutLib.Presets;
+global using ShortcutLib.Shortcut;
+global using static ShortcutLib.Extras.Debugging;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ShortcutLib.Extras;
-using ShortcutLib.Shortcut;
-using SRML;
-using SRML.SR;
 using SRML.Utils.Enum;
-using UnityEngine;
+using ShortcutLib.Extensions;
 
 namespace ShortcutLib
 {
@@ -36,9 +40,16 @@ namespace ShortcutLib
             };
         }
 
-        public override void PostLoad()
+        /*public override void PostLoad()
         {
-            
-        }
+            SRCallbacks.OnSaveGameLoaded += delegate (SceneContext sceneContext)
+            {
+                Identifiable.Id.PINK_SLIME.GetSlimeDefinition().AppearancesDefault[0].ModifyEyes(SlimeFace.SlimeExpression.Scared, new SlimeFace.SlimeExpression[] { SlimeFace.SlimeExpression.Blink, SlimeFace.SlimeExpression.Scared });
+                Identifiable.Id.PINK_SLIME.GetSlimeDefinition().AppearancesDefault[0].ModifyMouth(SlimeFace.SlimeExpression.Scared, new SlimeFace.SlimeExpression[] { SlimeFace.SlimeExpression.Blink, SlimeFace.SlimeExpression.Scared });
+                Identifiable.Id.TABBY_SLIME.GetSlimeDefinition().AppearancesDefault[0].ModifyEyes(SlimeFace.SlimeExpression.Scared, new SlimeFace.SlimeExpression[] { SlimeFace.SlimeExpression.Blink, SlimeFace.SlimeExpression.Scared });
+                Identifiable.Id.TABBY_SLIME.GetSlimeDefinition().AppearancesDefault[0].ModifyMouth(SlimeFace.SlimeExpression.Scared, new SlimeFace.SlimeExpression[] { SlimeFace.SlimeExpression.Blink, SlimeFace.SlimeExpression.Scared });
+                ShortcutConsole.Log("This logged");
+            };
+        }*/
     }
 }

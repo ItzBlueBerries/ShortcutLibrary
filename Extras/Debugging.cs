@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static SRML.Console.Console;
-using UnityEngine;
 
 namespace ShortcutLib.Extras
 {

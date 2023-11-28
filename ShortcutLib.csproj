@@ -79,9 +79,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Extras\Assets.cs" />
+    <Compile Include="Extras\Asset.cs" />
     <Compile Include="Extras\Debugging.cs" />
-    <Compile Include="Extras\ShortcutExtensions.cs" />
+    <Compile Include="Extras\Extensions\ShortcutMatExtensions.cs" />
+    <Compile Include="Extras\Extensions\ShortcutSlimeExtensions.cs" />
+    <Compile Include="Extras\Extensions\ShortcutUtilExtensions.cs" />
     <Compile Include="Extras\External.cs" />
     <Compile Include="Presets\Paths.cs" />
     <Compile Include="Presets\Sizes.cs" />
@@ -110,6 +112,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="LICENSE" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Harmony\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
