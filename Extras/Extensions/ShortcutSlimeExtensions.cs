@@ -31,6 +31,12 @@ namespace ShortcutLib.Extensions
             return array;
         }
 
+        /// <summary>
+        /// Changes the <see cref="SlimeFace.SlimeExpression"/> for the face eyes to a different <see cref="SlimeFace.SlimeExpression"/> for the given <see cref="SlimeAppearance"/>.
+        /// </summary>
+        /// <param name="slimeAppearance">The <see cref="SlimeAppearance"/> that is having it's face being modified.</param>
+        /// <param name="slimeExpression">The <see cref="SlimeFace.SlimeExpression"/> to change to.</param>
+        /// <param name="ignoredExpressions">The ignored <see cref="SlimeFace.SlimeExpression"/>s that won't be changed during the process.</param>
         public static void ModifyEyes(this SlimeAppearance slimeAppearance, SlimeFace.SlimeExpression slimeExpression, [Optional] SlimeFace.SlimeExpression[] ignoredExpressions)
         {
             if (ignoredExpressions.Length < 1)
@@ -45,7 +51,13 @@ namespace ShortcutLib.Extensions
             }
         }
 
-        public static void ModifyMouth(this SlimeAppearance slimeAppearance, SlimeFace.SlimeExpression slimeExpression, [Optional] SlimeFace.SlimeExpression[] ignoredExpressions)
+        /// <summary>
+        /// Changes the <see cref="SlimeFace.SlimeExpression"/> for the <see cref="SlimeFace"/> mouths to a different <see cref="SlimeFace.SlimeExpression"/> for the given <see cref="SlimeAppearance"/>.
+        /// </summary>
+        /// <param name="slimeAppearance">The <see cref="SlimeAppearance"/> that is having it's face being modified.</param>
+        /// <param name="slimeExpression">The <see cref="SlimeFace.SlimeExpression"/> to change to.</param>
+        /// <param name="ignoredExpressions">The ignored <see cref="SlimeFace.SlimeExpression"/>s that won't be changed during the process.</param>
+        public static void ModifyMouths(this SlimeAppearance slimeAppearance, SlimeFace.SlimeExpression slimeExpression, [Optional] SlimeFace.SlimeExpression[] ignoredExpressions)
         {
             if (ignoredExpressions.Length < 1)
                 ignoredExpressions = new SlimeFace.SlimeExpression[0];
@@ -59,7 +71,17 @@ namespace ShortcutLib.Extensions
             }
         }
 
-        public static void ColorFace(this SlimeAppearance slimeAppearance, Color eyeRed, Color eyeGreen, Color eyeBlue, Color mouthTop, Color mouthMid, Color mouthBot)
+        /// <summary>
+        /// Recolors the <see cref="SlimeFace"/> eyes & mouth to a different color.
+        /// </summary>
+        /// <param name="slimeAppearance">The <see cref="SlimeAppearance"/> that is having it's face recolored.</param>
+        /// <param name="eyeRed">The RGB red <see cref="Color"/> for the eyes. (Those not mean it has to be red)</param>
+        /// <param name="eyeGreen">The RGB green <see cref="Color"/> for the eyes. (Those not mean it has to be green)</param>
+        /// <param name="eyeBlue">The RGB blue <see cref="Color"/> for the eyes. (Those not mean it has to be blue)</param>
+        /// <param name="mouthTop">The top <see cref="Color"/> for the mouths.</param>
+        /// <param name="mouthMid">The middle <see cref="Color"/> for the mouths.</param>
+        /// <param name="mouthBot">The bottom <see cref="Color"/> for the mouths.</param>
+        public static void RecolorFace(this SlimeAppearance slimeAppearance, Color eyeRed, Color eyeGreen, Color eyeBlue, Color mouthTop, Color mouthMid, Color mouthBot)
         {
             SlimeExpressionFace[] expressionFaces = new SlimeExpressionFace[0];
             foreach (var slimeExpressionFace in slimeAppearance.Face.ExpressionFaces)
