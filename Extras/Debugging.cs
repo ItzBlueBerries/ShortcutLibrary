@@ -7,6 +7,9 @@ using static SRML.Console.Console;
 
 namespace ShortcutLib.Extras
 {
+    /// <summary>
+    /// Debugging / Extra methods for <see cref="ShortcutLib"/>.
+    /// </summary>
     public static class Debugging
     {
         internal static readonly ConsoleInstance ShortcutConsole = new ConsoleInstance("Shortcut Library");

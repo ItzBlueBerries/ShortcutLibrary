@@ -102,6 +102,15 @@ namespace ShortcutLib.Components
         /// <returns><see cref="string"/></returns>
         public static string CreateIdentifiableKey(string letter, string prefix, Identifiable.Id identifiable) => letter + "." + prefix + "." + identifiable.ToString().ToLower();
 
+
+        /// <summary>
+        /// Creates a new <see cref="GadgetTranslation"/>.
+        /// </summary>
+        /// <param name="gadgetIdentifiable">The <see cref="Gadget.Id"/> that will be attached to this <see cref="GadgetTranslation"/>.</param>
+        /// <returns><see cref="GadgetTranslation"/></returns>
+        public static GadgetTranslation CreateGadgetTranslation(Gadget.Id gadgetIdentifiable) => new GadgetTranslation(gadgetIdentifiable);
+
+
         /// <summary>
         /// Creates a new <see cref="PediaEntryTranslation"/>.
         /// </summary>
@@ -109,12 +118,41 @@ namespace ShortcutLib.Components
         /// <returns><see cref="PediaEntryTranslation"/></returns>
         public static PediaEntryTranslation CreatePediaTranslation(PediaDirector.Id pediaIdentifiable) => new PediaEntryTranslation(pediaIdentifiable);
 
+
         /// <summary>
         /// Creates a new <see cref="SlimePediaEntryTranslation"/>.
         /// </summary>
         /// <param name="pediaIdentifiable">The <see cref="PediaDirector.Id"/> that will be attached to this <see cref="SlimePediaEntryTranslation"/>.</param>
         /// <returns><see cref="SlimePediaEntryTranslation"/></returns>
         public static SlimePediaEntryTranslation CreateSlimepediaTranslation(PediaDirector.Id pediaIdentifiable) => new SlimePediaEntryTranslation(pediaIdentifiable);
+
+
+        /// <summary>
+        /// Translates a <see cref="ToyDefinition"/>.
+        /// </summary>
+        /// <param name="toyDefinition">The <see cref="ToyDefinition"/> to be translated.</param>
+        /// <param name="name">The name <see cref="string"/> of the toy.</param>
+        /// <param name="description">The description <see cref="string"/> of the toy.</param>
+        public static void Toy(ToyDefinition toyDefinition, string name, string description)
+        {
+            Pedia("m.toy.name." + toyDefinition.NameKey, name);
+            Pedia("m.toy.desc." + toyDefinition.NameKey, description);
+        }
+
+
+        /// <summary>
+        /// Translates a <see cref="Gadget.Id"/>.
+        /// </summary>
+        /// <param name="gadgetIdentifiable">The <see cref="Gadget.Id"/> to be translated.</param>
+        /// <param name="name">The name <see cref="string"/> of the gadget.</param>
+        /// <param name="description">The description <see cref="string"/> of the gadget.</param>
+        public static void Gadget(Gadget.Id gadgetIdentifiable, string name, string description)
+        {
+            CreateGadgetTranslation(gadgetIdentifiable)
+                .SetNameTranslation(name)
+                .SetDescriptionTranslation(description);
+        }
+
 
         /// <summary>
         /// Adds a new pedia entry to the <see cref="PediaRegistry.PediaCategory.RESOURCES"/> category.
@@ -142,6 +180,7 @@ namespace ShortcutLib.Components
             Pedia(CreateIdentifiableKey("m", "resource_type", identifiable), pediaResourceType);
             Pedia(CreateIdentifiableKey("m", "favored_by", identifiable), pediaFavoredBy);
         }
+
 
         /// <summary>
         /// Adds a new pedia entry to the <see cref="PediaRegistry.PediaCategory.SLIMES"/> category.

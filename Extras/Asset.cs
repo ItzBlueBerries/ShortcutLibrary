@@ -8,6 +8,9 @@ using UnityEngine;
 
 namespace ShortcutLib.Extras
 {
+    /// <summary>
+    /// Methods related to assets, including loading them from outside the assembly.
+    /// </summary>
     public static class Asset
     {
         /// <summary>

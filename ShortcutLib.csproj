@@ -87,6 +87,11 @@
     <Compile Include="Extras\External.cs" />
     <Compile Include="Presets\Paths.cs" />
     <Compile Include="Presets\Sizes.cs" />
+    <Compile Include="Shortcut\Definition.cs" />
+    <Compile Include="Shortcut\Ornament.cs" />
+    <Compile Include="Shortcut\Plot.cs" />
+    <Compile Include="Shortcut\Mail.cs" />
+    <Compile Include="Shortcut\Spawner.cs" />
     <Compile Include="Shortcut\Translate.cs" />
     <Compile Include="Shortcut\Achieve.cs" />
     <Compile Include="Shortcut\Director.cs" />
