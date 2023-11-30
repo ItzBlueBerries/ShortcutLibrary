@@ -91,6 +91,7 @@
     <Compile Include="Shortcut\Ornament.cs" />
     <Compile Include="Shortcut\Plot.cs" />
     <Compile Include="Shortcut\Mail.cs" />
+    <Compile Include="Shortcut\Registry.cs" />
     <Compile Include="Shortcut\Spawner.cs" />
     <Compile Include="Shortcut\Translate.cs" />
     <Compile Include="Shortcut\Achieve.cs" />
