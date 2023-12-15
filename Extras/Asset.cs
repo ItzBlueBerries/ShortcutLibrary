@@ -33,8 +33,12 @@ namespace ShortcutLib.Extras
         /// </summary>
         /// <param name="texture">The <see cref="Texture2D"/> to be converted.</param>
         /// <returns><see cref="Sprite"/></returns>
-        public static Sprite ConvertToSprite(this Texture2D texture) => 
-            Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), 1);
+        public static Sprite ToSprite(this Texture2D texture)
+        {
+            Sprite sprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f), 1f);
+            sprite.name = texture.name;
+            return sprite;
+        }
 
         /// <summary>
         /// Loads a <see cref="Texture2D"/> from outside the assembly.
