@@ -59,12 +59,14 @@ namespace ShortcutLib.Shortcut
         /// Sets an <see cref="AchievementsDirector.GameFloatStat"/>.
         /// </summary>
         /// <param name="stat">The <see cref="AchievementsDirector.GameFloatStat"/> to be set to.</param>
+        /// <param name="value">The value <see cref="float"/> to be set.</param>
         public static void SetStat(AchievementsDirector.GameFloatStat stat, float value) => Director.Achieve.SetStat(stat, value);
 
         /// <summary>
         /// Sets an <see cref="AchievementsDirector.GameDoubleStat"/>.
         /// </summary>
         /// <param name="stat">The <see cref="AchievementsDirector.GameDoubleStat"/> to be set to.</param>
+        /// <param name="value">The value <see cref="double"/> to be set.</param>
         public static void SetStat(AchievementsDirector.GameDoubleStat stat, double value) => Director.Achieve.SetStat(stat, value);
 
         /// <summary>

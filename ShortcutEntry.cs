@@ -13,6 +13,8 @@ using System.Text;
 using System.Threading.Tasks;
 using SRML.Utils.Enum;
 using ShortcutLib.Extensions;
+using ShortcutLib.Components;
+using System.Xml.Linq;
 
 namespace ShortcutLib
 {
@@ -24,11 +26,25 @@ namespace ShortcutLib
         public static readonly AchievementsDirector.Achievement ACk;
 
         public static readonly AchievementsDirector.IntStat Stat;
+
+        public static readonly SlimeEat.FoodGroup TEST;
     }
 
     internal class ShortcutEntry : ModEntryPoint
     {
-        public override void PreLoad() => HarmonyInstance.PatchAll();
+        public override void PreLoad()
+        {
+            HarmonyInstance.PatchAll();
+
+            Enums.TEST.Register("Test", new HashSet<Identifiable.Id>() { Identifiable.Id.ROOSTER });
+            Enums.TEST.AddTo(Identifiable.Id.HEN);
+            Enums.TEST.AddMany(new() { Identifiable.Id.POGO_FRUIT, Identifiable.Id.GINGER_VEGGIE });
+            /*Enums.TEST.RemoveFrom(Identifiable.Id.POGO_FRUIT);
+            Enums.TEST.RemoveMany(new List<Identifiable.Id>() { Identifiable.Id.GINGER_VEGGIE });*/
+
+            foreach (var foodGroup in FoodGroup.foodGroupsToPatch)
+                Translate.UI("m.foodgroup." + foodGroup.Key.ToString().ToLower().Replace(" ", "_"), foodGroup.Value.Item1);
+        }
 
         public override void Load()
         {
@@ -38,6 +54,7 @@ namespace ShortcutLib
                 if (zone == ZoneDirector.Zone.REEF)
                     Achieve.AddStat(Enums.Stat, 1);
             };
+            Identifiable.Id.PINK_SLIME.GetSlimeDefinition().Diet.MajorFoodGroups = new SlimeEat.FoodGroup[] { Enums.TEST };
         }
 
         /*public override void PostLoad()

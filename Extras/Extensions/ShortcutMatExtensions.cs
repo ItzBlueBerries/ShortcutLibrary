@@ -36,7 +36,7 @@ namespace ShortcutLib.Extensions
         /// </summary>
         /// <param name="obj">The <see cref="GameObject"/> to set the <see cref="Material"/> for.</param>
         /// <param name="material">The <see cref="Material"/> to be set to the <see cref="GameObject"/>.</param>
-        /// <param name="includeRendererComponent">The <see cref="bool"/> to include setting the <see cref="Renderer"/> component. Only if <see cref="MeshRenderer"/> & <see cref="SkinnedMeshRenderer"/> is not found.</param>
+        /// <param name="includeRendererComponent">The <see cref="bool"/> to include setting the <see cref="Renderer"/> component. Only if <see cref="MeshRenderer"/> and <see cref="SkinnedMeshRenderer"/> is not found.</param>
         public static void SetMaterial(this GameObject obj, Material material, bool includeRendererComponent = false)
         {
             var renderer = obj?.GetComponent<Renderer>();
@@ -55,7 +55,7 @@ namespace ShortcutLib.Extensions
         /// Gets the <see cref="Material"/> of a <see cref="GameObject"/> via it's <see cref="Renderer"/>.
         /// </summary>
         /// <param name="obj">The <see cref="GameObject"/> to grab the <see cref="Material"/> from.</param>
-        /// <param name="includeRendererComponent">The <see cref="bool"/> to include grabbing the <see cref="Renderer"/> component. Only if <see cref="MeshRenderer"/> & <see cref="SkinnedMeshRenderer"/> is not found.</param>
+        /// <param name="includeRendererComponent">The <see cref="bool"/> to include grabbing the <see cref="Renderer"/> component. Only if <see cref="MeshRenderer"/> and <see cref="SkinnedMeshRenderer"/> is not found.</param>
         /// <returns><see cref="Material"/></returns>
         public static Material GetMaterial(this GameObject obj, bool includeRendererComponent = false)
         {

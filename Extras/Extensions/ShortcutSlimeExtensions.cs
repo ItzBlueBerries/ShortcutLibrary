@@ -72,7 +72,7 @@ namespace ShortcutLib.Extensions
         }
 
         /// <summary>
-        /// Recolors the <see cref="SlimeFace"/> eyes & mouth to a different color.
+        /// Recolors the <see cref="SlimeFace"/> eyes and mouth to a different color.
         /// </summary>
         /// <param name="slimeAppearance">The <see cref="SlimeAppearance"/> that is having it's face recolored.</param>
         /// <param name="eyeRed">The RGB red <see cref="Color"/> for the eyes. (Those not mean it has to be red)</param>

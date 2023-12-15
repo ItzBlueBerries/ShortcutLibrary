@@ -89,7 +89,7 @@ namespace ShortcutLib.Components
         /// </summary>
         /// <param name="letter">The letter <see cref="string"/> that starts before the key.</param>
         /// <param name="prefix">The prefix <see cref="string"/> of the key.</param>
-        /// <param name="localizationSuffix">The suffix <see cref="string"/> of the key.</param>
+        /// <param name="suffix">The suffix <see cref="string"/> of the key.</param>
         /// <returns><see cref="string"/></returns>
         public static string CreateKey(string letter, string prefix, string suffix) => letter + "." + prefix + "." + suffix;
 

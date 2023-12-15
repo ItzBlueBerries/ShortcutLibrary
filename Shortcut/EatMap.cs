@@ -56,6 +56,8 @@ namespace ShortcutLib.Shortcut
         /// </summary>
         /// <param name="toProduce">The <see cref="Identifiable.Id"/> to produce.</param>
         /// <param name="whatItEats">The <see cref="Identifiable.Id"/> to eat for this to occur.</param>
+        /// <param name="isFavorite">If the <see cref="Identifiable.Id"/> being eaten is a favorite food. <see cref="bool"/></param>
+        /// <param name="favProduceCount">The amount <see cref="int"/> being produced when eating a favorite food.</param>
         /// <param name="minDrive">The <see cref="float"/> of which determines the minimum drive for eating the other <see cref="Identifiable.Id"/>.</param>
         /// <param name="extraDrive">The extra <see cref="float"/> of which determines the drive for eating the other <see cref="Identifiable.Id"/>.</param>
         /// <param name="driver">The <see cref="SlimeEmotions.Emotion"/> that will influence the drive for eating the other <see cref="Identifiable.Id"/>.</param>
