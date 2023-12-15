@@ -23,8 +23,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DocumentationFile>
-    </DocumentationFile>
+    <DocumentationFile>bin\Debug\ShortcutLib.xml</DocumentationFile>
+    <NoWarn>CS1584; CS1658; CS1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -55,6 +55,10 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\System\SteamLibrary\steamapps\common\Slime Rancher\SlimeRancher_Data\Managed\UnityEngine.AnimationModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.AssetBundleModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\System\SteamLibrary\steamapps\common\Slime Rancher\SlimeRancher_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
@@ -88,10 +92,12 @@
     <Compile Include="Presets\Paths.cs" />
     <Compile Include="Presets\Sizes.cs" />
     <Compile Include="Shortcut\Definition.cs" />
+    <Compile Include="Shortcut\Fashion.cs" />
     <Compile Include="Shortcut\Ornament.cs" />
     <Compile Include="Shortcut\Plot.cs" />
     <Compile Include="Shortcut\Mail.cs" />
     <Compile Include="Shortcut\Registry.cs" />
+    <Compile Include="Shortcut\Resource.cs" />
     <Compile Include="Shortcut\Spawner.cs" />
     <Compile Include="Shortcut\Translate.cs" />
     <Compile Include="Shortcut\Achieve.cs" />

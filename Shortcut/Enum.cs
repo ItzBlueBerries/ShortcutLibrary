@@ -63,7 +63,7 @@ namespace ShortcutLib.Shortcut
         /// <summary>
         /// Parses the <see cref="string"/> to an <see cref="enum"/> based on the name. Enum must exist.
         /// </summary>
-        /// <param name="T">The name of the <see cref="enum"/> to be parsed.</param>
+        /// <param>The name of the <see cref="enum"/> to be parsed.</param>
         /// <returns><see cref="enum"/></returns>
         public static T ParseEnum<T>(string name) => (T)Enum.Parse(typeof(T), name);
     }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace ShortcutLib.Shortcut
 {
     /// <summary>
-    /// Methods relating to plots & plot upgrades, this includes registering & creating entries for them.
+    /// Methods relating to plots and plot upgrades, this includes registering and creating entries for them.
     /// </summary>
     public static class Plot
     {

@@ -37,6 +37,8 @@ namespace ShortcutLib.Shortcut
             material.color = color;
             model.GetComponent<MeshRenderer>().material = material;
 
+            Identifiable.ORNAMENT_CLASS.Add(identifiable);
+
             Registry.AddIdentifiableToAmmo(identifiable);
             Registry.AddIdentifiableToSilo(identifiable);
             Registry.RegisterVaccable(identifiable, icon, vacColor, name.Replace(" ", "") + "Ornament");
