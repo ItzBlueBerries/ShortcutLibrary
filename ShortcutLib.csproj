@@ -93,6 +93,7 @@
     <Compile Include="Harmony\SlimeEatGetFoodGroupIdsPatch.cs" />
     <Compile Include="Presets\Paths.cs" />
     <Compile Include="Presets\Sizes.cs" />
+    <Compile Include="ShortcutLibException.cs" />
     <Compile Include="Shortcut\Definition.cs" />
     <Compile Include="Shortcut\Edible.cs" />
     <Compile Include="Shortcut\Fashion.cs" />

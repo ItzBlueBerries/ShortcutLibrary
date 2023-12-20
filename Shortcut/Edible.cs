@@ -57,7 +57,7 @@ namespace ShortcutLib.Shortcut
             Identifiable.NON_SLIMES_CLASS.Add(identifiable);
 
             Registry.AddIdentifiableToAmmo(identifiable);
-            Registry.RegisterVaccable(identifiable, icon, vacColor, name);
+            Registry.RegisterVaccable(identifiable, icon, vacColor, name.Replace(" ", ""));
             PediaRegistry.RegisterIdentifiableMapping(PediaDirector.Id.RESOURCES, identifiable);
 
             Translate.Pedia("t." + identifiable.ToString().ToLower(), name);
@@ -109,7 +109,7 @@ namespace ShortcutLib.Shortcut
             Identifiable.NON_SLIMES_CLASS.Add(identifiable);
 
             Registry.AddIdentifiableToAmmo(identifiable);
-            Registry.RegisterVaccable(identifiable, icon, vacColor, name);
+            Registry.RegisterVaccable(identifiable, icon, vacColor, name.Replace(" ", ""));
             PediaRegistry.RegisterIdentifiableMapping(PediaDirector.Id.RESOURCES, identifiable);
 
             Translate.Pedia("t." + identifiable.ToString().ToLower(), name);

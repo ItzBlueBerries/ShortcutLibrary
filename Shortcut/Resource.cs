@@ -12,252 +12,263 @@ namespace ShortcutLib.Shortcut
 {
     public static class Resource
     {
+        /// <summary>
+        /// Gets the prefab <see cref="GameObject"/> of a <see cref="SpawnResource.Id"/>.
+        /// </summary>
+        /// <param name="identifiable">The <see cref="SpawnResource.Id"/> to grab the prefab <see cref="GameObject"/> from.</param>
+        /// <returns><see cref="GameObject"/></returns>
         public static GameObject GetSpawnResource(SpawnResource.Id identifiable) => Director.Lookup.GetResourcePrefab(identifiable);
 
+        /// <summary>
+        /// Gets the <see cref="GadgetDefinition"/> of a <see cref="Gadget.Id"/>.
+        /// </summary>
+        /// <param name="identifiable">The <see cref="Gadget.Id"/> to grab the <see cref="GadgetDefinition"/> from.</param>
+        /// <returns><see cref="GadgetDefinition"/></returns>
         public static GadgetDefinition GetGadgetDefinition(Gadget.Id identifiable) => Director.Lookup.GetGadgetDefinition(identifiable);
 
-        /*
-        public static GameObject CreateGarden(SpawnResource.Id spawnResourcePrefab, SpawnResource.Id newSpawnResourceID, string newSpawnResourceName, GameObject[] spawnOptions, [Optional] GameObject[] additionalSpawnOptions, Identifiable.Id newFoodID, bool additionalFoods = false, float minSpawn = 10f, float maxSpawn = 20f, float minSpawnTime = 5f, float maxSpawnTime = 10f, float bonusFoodChance = 1f, int minBonusSpawn = 3)
+        /// <summary>
+        /// Creates a starting base for a custom crate.
+        /// </summary>
+        /// <param name="baseIdentifiable">The base <see cref="Identifiable.Id"/> that the crate copies the prefab <see cref="GameObject"/> from.</param>
+        /// <param name="identifiable">The <see cref="Identifiable.Id"/> of the crate.</param>
+        /// <param name="name">The name <see cref="string"/> of the crate.</param>
+        /// <param name="spawnOptions">The spawn options <see cref="BreakOnImpact.SpawnOption[]"/> of the crate.</param>
+        /// <param name="minSpawns">The minimum spawns <see cref="int"/> of the crate.</param>
+        /// <param name="maxSpawns">The maximum spawns <see cref="int"/> of the crate.</param>
+        /// <returns><see cref="GameObject"/></returns>
+        public static GameObject CreateCrateBase(Identifiable.Id baseIdentifiable, Identifiable.Id identifiable, string name, [Optional] List<BreakOnImpact.SpawnOption> spawnOptions, int minSpawns = 3, int maxSpawns = 6)
         {
-            GameObject SpawnPrefab = PrefabUtils.CopyPrefab(SRSingleton<GameContext>.Instance.LookupDirector.GetResourcePrefab(spawnResourcePrefab));
-            SpawnPrefab.name = newSpawnResourceName;
-            SpawnResource SpawnResource = SpawnPrefab.GetComponent<SpawnResource>();
-            SpawnResource.id = newSpawnResourceID;
-            SpawnResource.ObjectsToSpawn = spawnOptions;
-            if (additionalFoods)
-            {
-                SpawnResource.BonusObjectsToSpawn = additionalSpawnOptions;
-                SpawnResource.BonusChance = bonusFoodChance;
-                SpawnResource.minBonusSelections = minBonusSpawn;
-            }
-            SpawnResource.MinObjectsSpawned = minSpawn;
-            SpawnResource.MaxObjectsSpawned = maxSpawn;
-            SpawnResource.MinNutrientObjectsSpawned = SpawnResource.MaxObjectsSpawned;
-            SpawnResource.MinSpawnIntervalGameHours = minSpawnTime;
-            SpawnResource.MaxSpawnIntervalGameHours = maxSpawnTime;
+            GameObject prefab = Prefab.QuickCopy(baseIdentifiable);
+            prefab.name = "crate" + name.Replace(" ", "");
 
-            foreach (GameObject sprout in SpawnPrefab.FindChildren("Sprout"))
-            {
-                GameObject SproutGameObject = SRSingleton<GameContext>.Instance.LookupDirector.GetPrefab(newFoodID);
-                sprout.GetComponent<MeshFilter>().sharedMesh = SproutGameObject.GetComponentInChildren<MeshFilter>().sharedMesh;
-                sprout.GetComponent<MeshRenderer>().sharedMaterial = SproutGameObject.GetComponentInChildren<MeshRenderer>().sharedMaterial;
-            }
-            foreach (Joint joint in SpawnResource.SpawnJoints)
-            {
-                GameObject FoodGameObject = SRSingleton<GameContext>.Instance.LookupDirector.GetPrefab(newFoodID);
-                joint.gameObject.GetComponent<MeshFilter>().sharedMesh = FoodGameObject.GetComponentInChildren<MeshFilter>().sharedMesh;
-                joint.gameObject.GetComponent<MeshRenderer>().sharedMaterial = FoodGameObject.GetComponentInChildren<MeshRenderer>().sharedMaterial;
-            }
+            prefab.GetComponent<Identifiable>().id = identifiable;
+            prefab.GetComponent<BreakOnImpact>().minSpawns = minSpawns;
+            prefab.GetComponent<BreakOnImpact>().maxSpawns = maxSpawns;
+            prefab.GetComponent<BreakOnImpact>().spawnOptions = spawnOptions ?? prefab.GetComponent<BreakOnImpact>().spawnOptions;
 
-            return SpawnPrefab;
+            Identifiable.STANDARD_CRATE_CLASS.Add(identifiable);
+            // PediaRegistry.RegisterIdentifiableMapping(PediaDirector.Id.RESOURCES, identifiable);
+
+            // Translate.Actor("l." + identifiable.ToString().ToLower(), name);
+            LookupRegistry.RegisterIdentifiablePrefab(prefab);
+            return prefab;
         }
 
-        public static GameObject CreateCrate(Identifiable.Id cratePrefab, Identifiable.Id newCrateID, string newCrateName, [Optional] Color crateColor, Identifiable.Id crateMaterial = Identifiable.Id.CRATE_REEF_01, Texture2D crateTexture = null, bool hasCustomMaterial = false, bool textureCrate = false, int minSpawn = 3, int maxSpawn = 6, Vacuumable.Size vacSetting = Vacuumable.Size.LARGE)
+        /// <summary>
+        /// Creates a starting base for a custom resource.
+        /// </summary>
+        /// <param name="baseIdentifiable">The base <see cref="Identifiable.Id"/> that the resource copies the prefab <see cref="GameObject"/> from.</param>
+        /// <param name="identifiable">The <see cref="Identifiable.Id"/> of the resource.</param>
+        /// <param name="icon">The icon <see cref="Sprite"/> of the resource.</param>
+        /// <param name="name">The name <see cref="string"/> of the resource.</param>
+        /// <param name="vacColor">The vac color <see cref="Color"/> of the resource.</param>
+        /// <returns><see cref="GameObject"/></returns>
+        public static GameObject CreateResourceBase(Identifiable.Id baseIdentifiable, Identifiable.Id identifiable, Sprite icon, string name, Color vacColor)
         {
-            GameObject CratePrefab = Prefab.QuickPrefab(cratePrefab);
-            CratePrefab.name = newCrateName;
+            GameObject prefab = Prefab.QuickCopy(baseIdentifiable);
+            prefab.name = "craft" + name.Replace(" ", "");
 
-            CratePrefab.GetComponent<Identifiable>().id = newCrateID;
-            CratePrefab.GetComponent<Vacuumable>().size = vacSetting;
-            CratePrefab.GetComponent<BreakOnImpact>().minSpawns = minSpawn;
-            CratePrefab.GetComponent<BreakOnImpact>().maxSpawns = maxSpawn;
+            prefab.GetComponent<Identifiable>().id = identifiable;
 
-            if (hasCustomMaterial)
+            Identifiable.CRAFT_CLASS.Add(identifiable);
+            Identifiable.NON_SLIMES_CLASS.Add(identifiable);
+
+            Registry.AddIdentifiableToAmmo(identifiable);
+            Registry.AddIdentifiableToSilo(identifiable);
+            Registry.AddIdentifiableToRefinery(identifiable);
+            Registry.RegisterVaccable(identifiable, icon, vacColor, name.Replace(" ", "") + "Craft");
+            PediaRegistry.RegisterIdentifiableMapping(PediaDirector.Id.RESOURCES, identifiable);
+
+            Translate.Pedia("t." + identifiable.ToString().ToLower(), name);
+            LookupRegistry.RegisterIdentifiablePrefab(prefab);
+            return prefab;
+        }
+
+        /// <summary>
+        /// Creates a starting base for a custom spawn resource. (e.g. Garden Patches/Trees)
+        /// </summary>
+        /// <param name="baseIdentifiable">The base <see cref="SpawnResource.Id"/> that the spawn resource copies the prefab <see cref="GameObject"/> from.</param>
+        /// <param name="identifiable">The <see cref="SpawnResource.Id"/> of the spawn resource.</param>
+        /// <param name="foodIdentifiable">The food <see cref="Identifiable.Id"/> that grows from the spawn resource.</param>
+        /// <param name="name">The name <see cref="string"/> of the spawn resource.</param>
+        /// <param name="objectsToSpawn">The objects to spawn <see cref="GameObject[]"/> from the spawn resource.</param>
+        /// <param name="minSpawns">The minimum spawns <see cref="int"/> of the spawn resource.</param>
+        /// <param name="maxSpawns">The maximum spawns <see cref="int"/> of the spawn resource.</param>
+        /// <param name="minSpawnTime">The minimum spawn time <see cref="float"/> of the spawn resource.</param>
+        /// <param name="maxSpawnTime">The maximum spawn time <see cref="float"/> of the spawn resource.</param>
+        /// <returns><see cref="GameObject"/></returns>
+        public static GameObject CreateSpawnResourceBase(SpawnResource.Id baseIdentifiable, SpawnResource.Id identifiable, Identifiable.Id foodIdentifiable, string name, GameObject[] objectsToSpawn, float minSpawns = 10, float maxSpawns = 20, float minSpawnTime = 5, float maxSpawnTime = 10)
+        {
+            GameObject prefab = Prefab.ObjectCopy(GetSpawnResource(baseIdentifiable));
+
+            string toString = identifiable.ToString();
+            prefab.name = toString.ToUpper().Contains("TREE") ? "tree" + name.Replace(" ", "") :
+                (toString.ToUpper().Contains("PATCH") ? "patch" + name.Replace(" ", "") : "garden" + name.Replace(" ", ""));
+
+            SpawnResource spawnResource = prefab.GetComponent<SpawnResource>();
+            spawnResource.id = identifiable;
+            spawnResource.ObjectsToSpawn = objectsToSpawn;
+
+            spawnResource.MinObjectsSpawned = minSpawns;
+            spawnResource.MaxObjectsSpawned = maxSpawns;
+            spawnResource.MinNutrientObjectsSpawned = spawnResource.MinObjectsSpawned;
+
+            spawnResource.MinSpawnIntervalGameHours = minSpawnTime;
+            spawnResource.MaxSpawnIntervalGameHours = maxSpawnTime;
+
+            foreach (GameObject sprout in prefab.FindChildren("Sprout"))
             {
-                GameObject crateMatPrefab = Prefab.QuickPrefab(crateMaterial);
-                CratePrefab.GetComponent<MeshRenderer>().material = UnityEngine.Object.Instantiate(crateMatPrefab.GetComponent<MeshRenderer>().material);
-                CratePrefab.GetComponent<MeshRenderer>().material.SetColor("_Color", crateColor);
+                GameObject gameObject = SRSingleton<GameContext>.Instance.LookupDirector.GetPrefab(foodIdentifiable);
+                sprout.GetComponent<MeshFilter>().sharedMesh = gameObject.GetComponentInChildren<MeshFilter>().sharedMesh;
+                sprout.GetComponent<MeshRenderer>().sharedMaterial = gameObject.GetComponentInChildren<MeshRenderer>().sharedMaterial;
             }
 
-            if (textureCrate)
-            { CratePrefab.GetComponent<MeshRenderer>().material.SetTexture("_MainTex", crateTexture); }
-
-            Identifiable.STANDARD_CRATE_CLASS.Add(newCrateID);
-            Translate.TranslateActor("l." + newCrateID.ToString().ToLower(), newCrateName);
-            LookupRegistry.RegisterIdentifiablePrefab(CratePrefab);
-            Registry.RegisterPedia(PediaDirector.Id.RESOURCES, newCrateID);
-
-            return CratePrefab;
-        }
-
-        public static GameObject CreateBottledResource(Identifiable.Id resourcePrefab, Identifiable.Id newResourceID, string newResourceName, Sprite resourceIcon, Material outsideMaterial, Material insideMaterial, Color vacColor, Vacuumable.Size vacSetting = Vacuumable.Size.NORMAL)
-        {
-            GameObject resourceObject = Prefab.QuickPrefab(resourcePrefab);
-            resourceObject.GetComponent<Identifiable>().id = newResourceID;
-            resourceObject.name = newResourceName;
-
-            resourceObject.transform.GetChild(0).GetChild(1).GetChild(0).gameObject.GetComponent<MeshRenderer>().material = insideMaterial;
-            resourceObject.transform.GetChild(0).gameObject.GetComponent<MeshRenderer>().material = outsideMaterial;
-
-            resourceObject.GetComponent<Vacuumable>().size = vacSetting;
-
-            Identifiable.CRAFT_CLASS.Add(newResourceID);
-            Identifiable.NON_SLIMES_CLASS.Add(newResourceID);
-            Translate.TranslatePedia("t." + newResourceID.ToString().ToLower(), newResourceName);
-            LookupRegistry.RegisterIdentifiablePrefab(resourceObject);
-            Registry.RegisterPedia(PediaDirector.Id.RESOURCES, newResourceID);
-            AmmoRegistry.RegisterSiloAmmo((SiloStorage.StorageType x) => x == SiloStorage.StorageType.NON_SLIMES || x == SiloStorage.StorageType.CRAFTING, newResourceID);
-            AmmoRegistry.RegisterAmmoPrefab(PlayerState.AmmoMode.DEFAULT, SRSingleton<GameContext>.Instance.LookupDirector.GetPrefab(newResourceID));
-            AmmoRegistry.RegisterRefineryResource(newResourceID);
-            LookupRegistry.RegisterVacEntry(newResourceID, vacColor, resourceIcon);
-
-            return resourceObject;
-        }
-
-        public static Extractor AddResourceToEx(Gadget.Id extractorId, Identifiable.Id resourceId, float weight, bool restrictZone = false, ZoneDirector.Zone zone = ZoneDirector.Zone.NONE)
-        {
-            Extractor component = SRSingleton<GameContext>.Instance.LookupDirector.GetGadgetDefinition(extractorId).prefab.GetComponent<Extractor>();
-            Extractor.ProduceEntry item = new Extractor.ProduceEntry();
-
-            if (!restrictZone)
+            foreach (Joint joint in spawnResource.SpawnJoints)
             {
-                item = new Extractor.ProduceEntry
+                GameObject gameObject = SRSingleton<GameContext>.Instance.LookupDirector.GetPrefab(foodIdentifiable);
+                joint.gameObject.GetComponent<MeshFilter>().sharedMesh = gameObject.GetComponentInChildren<MeshFilter>().sharedMesh;
+                joint.gameObject.GetComponent<MeshRenderer>().sharedMaterial = gameObject.GetComponentInChildren<MeshRenderer>().sharedMaterial;
+            }
+
+            LookupRegistry.RegisterSpawnResource(prefab);
+            return prefab;
+        }
+
+        public static GameObject CreateGadgetBase(Gadget.Id baseIdentifiable, Gadget.Id identifiable, PediaDirector.Id pediaLink, Sprite icon, string name, string description, int blueprintCost, int countLimit, int buyCountLimit, bool destroyOnRemoval, GadgetDefinition.CraftCost[] craftCosts)
+        {
+            GameObject prefab = Prefab.ObjectCopy(GetGadgetDefinition(baseIdentifiable).prefab);
+            prefab.name = "gadget" + name.Replace(" ", "");
+
+            prefab.GetComponent<Gadget>().id = identifiable;
+
+            GadgetDefinition gadgetDefinition = Definition.CreateGadDefinition(
+                identifiable,
+                pediaLink,
+                prefab,
+                icon,
+                name,
+                countLimit,
+                blueprintCost,
+                buyCountLimit,
+                destroyOnRemoval,
+                false,
+                null,
+                craftCosts
+            );
+
+            Translate.CreateGadgetTranslation(identifiable)
+                .SetNameTranslation(name)
+                .SetDescriptionTranslation(description);
+            LookupRegistry.RegisterGadget(gadgetDefinition);
+            return prefab;
+        }
+
+        /// <summary>
+        /// Quickly recolors an extractor, as it is a common custom gadget with lots of color properties.
+        /// </summary>
+        /// <param name="identifiable">The <see cref="Gadget.Id"/> of the extractor.</param>
+        /// <param name="coreColors">The color array <see cref="Color[]"/> for the core colors of the extractor. Requires 8 colors exact.</param>
+        /// <param name="ext23Colors">The color array <see cref="Color[]"/> for the ext23 colors of the extractor. Requires 8 colors exact.</param>
+        /// <param name="extrColors">The color array <see cref="Color[]"/> for the extr colors of the extractor. Requires 8 colors exact.</param>
+        /// <exception cref="ShortcutLibException">This can be thrown if you do not specify the requirement of 8 colors per color array.</exception>
+        public static void QuickRecolorExtractor(Gadget.Id identifiable, Color[] coreColors, Color[] ext23Colors, Color[] extrColors)
+        {
+            if (coreColors.Length < 8 || coreColors.Length > 8)
+                throw new ShortcutLibException("`8 colors` exact are required to be in the `coreColors` array while using `QuickRecolorExtractor`.");
+
+            if (ext23Colors.Length < 8 || ext23Colors.Length > 8)
+                throw new ShortcutLibException("`8 colors` exact are required to be in the `ext23Colors` array while using `QuickRecolorExtractor`.");
+
+            if (extrColors.Length < 8 || extrColors.Length > 8)
+                throw new ShortcutLibException("`8 colors` exact are required to be in the `extrColors` array while using `QuickRecolorExtractor`.");
+
+            GameObject prefab = GetGadgetDefinition(identifiable).prefab;
+
+            SkinnedMeshRenderer coreRenderer = prefab.transform.Find("core").gameObject.GetComponent<SkinnedMeshRenderer>();
+            coreRenderer.material = (Material)Prefab.Instantiate(coreRenderer.material);
+
+            GameObject ext23 = null;
+            GameObject extr = null;
+
+            foreach (Transform transform in prefab.transform)
+            {
+                if (!transform?.gameObject)
+                    continue;
+
+                if (transform.gameObject.name.Contains("ext_") && transform.gameObject.name.Contains("23") && transform.gameObject.activeSelf)
                 {
-                    id = resourceId,
-                    weight = weight,
-                    spawnFX = component.produces[0].spawnFX
-                };
+                    ext23 = transform.gameObject;
+                    break;
+                }
             }
-            else if (restrictZone)
+
+            foreach (Transform transform in prefab.transform)
             {
-                item = new Extractor.ProduceEntry
+                if (!transform?.gameObject)
+                    continue;
+
+                if (transform.gameObject.name.Contains("ext_r") && transform.gameObject.activeSelf)
                 {
-                    id = resourceId,
-                    weight = weight,
-                    restrictZone = restrictZone,
-                    zone = zone,
-                    spawnFX = component.produces[0].spawnFX
-                };
+                    extr = transform.gameObject;
+                    break;
+                }
+                ShortcutConsole.Log(transform.gameObject.name);
             }
 
-            List<Extractor.ProduceEntry> list = new List<Extractor.ProduceEntry>(); //Create a new list
-            foreach (Extractor.ProduceEntry item2 in component.produces) //For each thing it produces
+            SkinnedMeshRenderer ext23Renderer = ext23.GetComponent<SkinnedMeshRenderer>();
+            ext23Renderer.material = (Material)Prefab.Instantiate(ext23Renderer.material);
+
+            SkinnedMeshRenderer extrRenderer = null;
+            if (extr)
             {
-                list.Add(item2); //Add it to the list
+                extrRenderer = extr.GetComponent<SkinnedMeshRenderer>();
+                extrRenderer.material = (Material)Prefab.Instantiate(extrRenderer.material);
             }
-            list.Add(item); //Add your custom 'Extractor.ProduceEntry' to the list
-            component.produces = list.ToArray(); //Set the new list
 
-            return component;
-        }
+            // CORE
+            // - 0
+            coreRenderer.material.SetColor("_Color00", coreColors[0]);
+            coreRenderer.material.SetColor("_Color01", coreColors[1]);
+            // - 1
+            coreRenderer.material.SetColor("_Color10", coreColors[2]);
+            coreRenderer.material.SetColor("_Color11", coreColors[3]);
+            // - 2
+            coreRenderer.material.SetColor("_Color20", coreColors[4]);
+            coreRenderer.material.SetColor("_Color21", coreColors[5]);
+            // - 3
+            coreRenderer.material.SetColor("_Color30", coreColors[6]);
+            coreRenderer.material.SetColor("_Color31", coreColors[7]);
 
-        public static GameObject CreateExtractor(Gadget.Id gadgetPrefab, Gadget.Id newGadgetID, string newGadgetName, Sprite newIcon, string newGadgetDescription, int extractorCost, int extractorBuyLimit, GadgetDefinition.CraftCost[] craftCosts, Extractor.ProduceEntry[] extractorProduces, ProgressDirector.ProgressType zoneUnlock, float unlockTime = 3f, int cycles = 3, int minProduce = 3, int maxProduce = 6, float timePerCycle = 12, bool infiniteCycles = false)
-        {
+            // EXT23
+            // - 0
+            ext23Renderer.material.SetColor("_Color00", ext23Colors[0]);
+            ext23Renderer.material.SetColor("_Color01", ext23Colors[1]);
+            // - 1
+            ext23Renderer.material.SetColor("_Color10", ext23Colors[2]);
+            ext23Renderer.material.SetColor("_Color11", ext23Colors[3]);
+            // - 2
+            ext23Renderer.material.SetColor("_Color20", ext23Colors[4]);
+            ext23Renderer.material.SetColor("_Color21", ext23Colors[5]);
+            // - 3
+            ext23Renderer.material.SetColor("_Color30", ext23Colors[6]);
+            ext23Renderer.material.SetColor("_Color31", ext23Colors[7]);
 
-            GameObject GadgetPrefab = Prefab.ObjectPrefab(Resource.GetGadgetDef(gadgetPrefab).prefab);
-            GadgetPrefab.name = newGadgetName;
-
-            GameObject fx = GadgetPrefab.GetComponent<Extractor>().produces[0].spawnFX;
-
-            GadgetPrefab.GetComponent<Gadget>().id = newGadgetID;
-            GadgetPrefab.GetComponent<Extractor>().produceMin = minProduce;
-            GadgetPrefab.GetComponent<Extractor>().produceMax = maxProduce;
-            GadgetPrefab.GetComponent<Extractor>().hoursPerCycle = timePerCycle;
-            GadgetPrefab.GetComponent<Extractor>().produces = extractorProduces;
-            GadgetPrefab.GetComponent<Extractor>().produces[0].spawnFX = fx;
-
-            if (!infiniteCycles)
-            { GadgetPrefab.GetComponent<Extractor>().cycles = cycles; }
-            else { GadgetPrefab.GetComponent<Extractor>().infiniteCycles = infiniteCycles; }
-
-            Sprite GadgetIcon = newIcon;
-            GadgetDefinition GadgetDef = ScriptableObject.CreateInstance<GadgetDefinition>();
-            GadgetDef.prefab = GadgetPrefab;
-            GadgetDef.id = newGadgetID;
-            GadgetDef.pediaLink = PediaDirector.Id.EXTRACTORS;
-            GadgetDef.blueprintCost = extractorCost;
-            GadgetDef.buyCountLimit = extractorBuyLimit;
-            GadgetDef.icon = GadgetIcon;
-            GadgetDef.craftCosts = craftCosts;
-
-            LookupRegistry.RegisterGadget(GadgetDef);
-
-            Gadget.EXTRACTOR_CLASS.Add(newGadgetID);
-
-            new GadgetTranslation(newGadgetID).SetNameTranslation(newGadgetName).SetDescriptionTranslation(newGadgetDescription);
-
-            GadgetRegistry.RegisterBlueprintLock(newGadgetID, x => x.CreateBasicLock(newGadgetID, Gadget.Id.NONE, zoneUnlock, unlockTime));
-
-            return GadgetPrefab;
-        }
-
-        public static void ColorExtractor(Gadget.Id newExtractorId, Color32[] mainColors, Color32[] extColors1, Color32[] extColors2, int extrIndex, bool isApiary = false, bool isPump = false, bool isDrill = false)
-        {
-            if (mainColors.Length < 8)
-                throw new NullReferenceException("Please have at least 8 colors in your Main Colors Array. (This includes Ext Colors)");
-            if (mainColors.Length > 8)
-                throw new NullReferenceException("Please don't have more than 8 colors in your Main Colors Array. (This includes Ext Colors)");
-            if (extColors1.Length < 8)
-                throw new NullReferenceException("Please have at least 8 colors in your Ext Colors (1) Array. (This includes Main/Ext Colors)");
-            if (extColors1.Length > 8)
-                throw new NullReferenceException("Please don't have more than 8 colors in your Ext Colors (1) Array. (This includes Main/Ext Colors)");
-            if (extColors2.Length < 8)
-                throw new NullReferenceException("Please have at least 8 colors in your Ext Colors (2) Array. (This includes Main/Ext Colors)");
-            if (extColors2.Length > 8)
-                throw new NullReferenceException("Please don't have more than 8 colors in your Ext Colors (2) Array. (This includes Main/Ext Colors)");
-
-            GameObject NewGadgetPrefab = GetGadgetDef(newExtractorId).prefab;
-
-            string ext23 = "none";
-            string extr;
-
-            string[] index = new string[]
+            if (extr)
             {
-                "ext_r1",
-                "ext_r2",
-                "ext_r3"
-            };
-
-            extr = index[extrIndex];
-
-            if (isApiary)
-            { ext23 = "ext_apiary23"; }
-
-            if (isPump)
-            { ext23 = "ext_pump23"; }
-
-            if (isDrill)
-            { ext23 = "ext_drill23"; }
-
-            NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material = (Material)Prefab.Instantiate(NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material);
-            NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material = (Material)Prefab.Instantiate(NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material);
-            NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material = (Material)Prefab.Instantiate(NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material);
-
-            // recolor x4 shader thingy (core)
-            // red
-            NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color00", mainColors[0]);
-            NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color01", mainColors[1]);
-            // green
-            NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color10", mainColors[2]);
-            NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color11", mainColors[3]);
-            // blue
-            NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color20", mainColors[4]);
-            NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color21", mainColors[5]);
-            // black
-            NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color30", mainColors[6]);
-            NewGadgetPrefab.transform.Find("core").GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color31", mainColors[7]);
-
-            // recolor x4 shader thingy (ext)
-            // red
-            NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color00", extColors1[0]);
-            NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color01", extColors1[1]);
-            NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color00", extColors2[0]);
-            NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color01", extColors2[1]);
-            // green
-            NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color10", extColors1[2]);
-            NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color11", extColors1[3]);
-            NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color10", extColors2[2]);
-            NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color11", extColors2[3]);
-            // blue
-            NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color20", extColors1[4]);
-            NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color21", extColors1[5]);
-            NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color20", extColors2[4]);
-            NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color21", extColors2[5]);
-            // black
-            NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color30", extColors1[6]);
-            NewGadgetPrefab.transform.Find(ext23).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color31", extColors1[7]);
-            NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color30", extColors2[6]);
-            NewGadgetPrefab.transform.Find(extr).GetComponent<SkinnedMeshRenderer>().material.SetColor("_Color31", extColors2[7]);
-        }*/
+                // EXTR
+                // - 0
+                extrRenderer.material.SetColor("_Color00", extrColors[0]);
+                extrRenderer.material.SetColor("_Color01", extrColors[1]);
+                // - 1
+                extrRenderer.material.SetColor("_Color10", extrColors[2]);
+                extrRenderer.material.SetColor("_Color11", extrColors[3]);
+                // - 2
+                extrRenderer.material.SetColor("_Color20", extrColors[4]);
+                extrRenderer.material.SetColor("_Color21", extrColors[5]);
+                // - 3
+                extrRenderer.material.SetColor("_Color30", extrColors[6]);
+                extrRenderer.material.SetColor("_Color31", extrColors[7]);
+            }
+        }
     }
 }
