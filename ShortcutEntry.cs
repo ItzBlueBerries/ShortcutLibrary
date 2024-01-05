@@ -31,6 +31,8 @@ namespace ShortcutLib
         public static readonly SpawnResource.Id TEST_PATCH;
 
         public static readonly Gadget.Id TEST_EXTRACTOR;
+
+        public static readonly Identifiable.Id TEST_GORDO;
     }
 
     internal class ShortcutEntry : ModEntryPoint
@@ -117,6 +119,15 @@ namespace ShortcutLib
                 Color.yellow,
                 Color.yellow,
             });
+
+            Gordo.CreateGordoBase(Identifiable.Id.ROCK_GORDO, Enums.TEST_GORDO, Identifiable.Id.PINK_SLIME, null, "Test Gordo", 1, new List<GameObject>(), new ZoneDirector.Zone[] { ZoneDirector.Zone.REEF });
+            Gordo.ModifyGordoSpawns(Enums.TEST_GORDO, 6);
+            Gordo.ModifyGordoSpawns(Identifiable.Id.PINK_GORDO, 50);
+            Gordo.ModifyGordoSpawns(Identifiable.Id.TABBY_GORDO, 13);
+            SRCallbacks.PreSaveGameLoad += delegate (SceneContext sceneContext)
+            {
+                Gordo.PositionGordo(Enums.TEST_GORDO, GameObject.Find("zoneREEF/cellReef_GordoIsland/Sector").transform, new Vector3(-98.1f, 6.4f, 11.5f), 0);
+            };
         }
 
         /*public override void PostLoad()

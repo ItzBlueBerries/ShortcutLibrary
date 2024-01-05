@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 
 namespace ShortcutLib.Shortcut
 {
+    /// <summary>
+    /// Methods for creating resources, gadgets, etc.
+    /// </summary>
     public static class Resource
     {
         /// <summary>
@@ -134,6 +137,21 @@ namespace ShortcutLib.Shortcut
             return prefab;
         }
 
+        /// <summary>
+        /// Creates a starting base for a custom gadget.
+        /// </summary>
+        /// <param name="baseIdentifiable">The base <see cref="Gadget.Id"/> that the spawn resource copies the prefab <see cref="GameObject"/> from.</param>
+        /// <param name="identifiable">The <see cref="Gadget.Id"/> of the gadget.</param>
+        /// <param name="pediaLink">The pediaLink <see cref="PediaDirector.Id"/> of the gadget.</param>
+        /// <param name="icon">The icon <see cref="Sprite"/> of the gadget.</param>
+        /// <param name="name">The name <see cref="string"/> of the gadget.</param>
+        /// <param name="description">The description <see cref="string"/> of the gadget.</param>
+        /// <param name="blueprintCost">The blueprint cost <see cref="int"/> of the gadget.</param>
+        /// <param name="countLimit">The count limit <see cref="int"/> of the gadget.</param>
+        /// <param name="buyCountLimit">The buy count limit <see cref="int"/> of the gadget.</param>
+        /// <param name="destroyOnRemoval">If it is destroyed on removal. <see cref="bool"/></param>
+        /// <param name="craftCosts">The craft costs <see cref="GadgetDefinition.CraftCost[]"/> of the gadget.</param>
+        /// <returns><see cref="GameObject"/></returns>
         public static GameObject CreateGadgetBase(Gadget.Id baseIdentifiable, Gadget.Id identifiable, PediaDirector.Id pediaLink, Sprite icon, string name, string description, int blueprintCost, int countLimit, int buyCountLimit, bool destroyOnRemoval, GadgetDefinition.CraftCost[] craftCosts)
         {
             GameObject prefab = Prefab.ObjectCopy(GetGadgetDefinition(baseIdentifiable).prefab);

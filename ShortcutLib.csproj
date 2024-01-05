@@ -89,6 +89,7 @@
     <Compile Include="Extras\Extensions\ShortcutSlimeExtensions.cs" />
     <Compile Include="Extras\Extensions\ShortcutUtilExtensions.cs" />
     <Compile Include="Extras\External.cs" />
+    <Compile Include="Harmony\GordoRewardsBaseGiveRewardsPatch.cs" />
     <Compile Include="Harmony\SlimeDietGetFoodCategoryMsgPatch.cs" />
     <Compile Include="Harmony\SlimeEatGetFoodGroupIdsPatch.cs" />
     <Compile Include="Presets\Paths.cs" />
@@ -98,11 +99,13 @@
     <Compile Include="Shortcut\Edible.cs" />
     <Compile Include="Shortcut\Fashion.cs" />
     <Compile Include="Shortcut\FoodGroup.cs" />
+    <Compile Include="Shortcut\Gordo.cs" />
     <Compile Include="Shortcut\Ornament.cs" />
     <Compile Include="Shortcut\Plot.cs" />
     <Compile Include="Shortcut\Mail.cs" />
     <Compile Include="Shortcut\Registry.cs" />
     <Compile Include="Shortcut\Resource.cs" />
+    <Compile Include="Shortcut\Slime.cs" />
     <Compile Include="Shortcut\Spawner.cs" />
     <Compile Include="Shortcut\Translate.cs" />
     <Compile Include="Shortcut\Achieve.cs" />
