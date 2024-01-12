@@ -8,7 +8,7 @@ using static ShortcutLib.Shortcut.Gordo;
 
 namespace ShortcutLib.Harmony
 {
-    [HarmonyPatch(typeof(GordoRewardsBase), nameof(GordoRewardsBase.GiveRewards))]
+    /*[HarmonyPatch(typeof(GordoRewardsBase), nameof(GordoRewardsBase.GiveRewards))]
     internal class GordoRewardsBaseGiveRewardsPatch
     {
         private static Vector3[] defaultGordoSpawns = GordoRewardsBase.spawns;
@@ -37,8 +37,8 @@ namespace ShortcutLib.Harmony
         public static void Prefix(GordoRewardsBase __instance)
         {
             var identifiable = __instance.GetComponent<GordoIdentifiable>().id;
-            if (gordoSpawnsToPatch.ContainsKey(identifiable)) return;
-                // GordoRewardsBase.spawns = PopulateSpawnPoints(gordoSpawnsToPatch[identifiable]);
+            if (gordoSpawnsToPatch.ContainsKey(identifiable))
+                GordoRewardsBase.spawns = PopulateSpawnPoints(gordoSpawnsToPatch[identifiable]);
         }
 
         public static void Postfix(GordoRewardsBase __instance)
@@ -75,9 +75,13 @@ namespace ShortcutLib.Harmony
                 int secondSegment = firstSegment / 2;
                 int thirdSegment = secondSegment / 2;
 
+                ShortcutConsole.Log(firstSegment);
+                ShortcutConsole.Log(secondSegment);
+                ShortcutConsole.Log(thirdSegment);
+
                 for (int i = 1; i < firstSegment; i++)
                 {
-                    float angle = 6.2831855f * i / toPopulate.Length + offsets[0];
+                    float angle = 6.2831855f * i / firstSegment + offsets[0];
                     float x = x_axis[0];
                     float y = y_axis[0];
                     toPopulate[i] = new Vector3(Mathf.Cos(angle) * x, y, Mathf.Sin(angle) * x);
@@ -85,7 +89,7 @@ namespace ShortcutLib.Harmony
 
                 for (int i = 0; i < secondSegment; i++)
                 {
-                    float angle = 6.2831855f * i / toPopulate.Length + offsets[1];
+                    float angle = 6.2831855f * i / secondSegment + offsets[1];
                     float x = x_axis[1];
                     float y = y_axis[1];
                     toPopulate[firstSegment + i] = new Vector3(Mathf.Cos(angle) * x, y, Mathf.Sin(angle) * x);
@@ -93,13 +97,13 @@ namespace ShortcutLib.Harmony
 
                 for (int i = 0; i < thirdSegment; i++)
                 {
-                    float angle = 6.2831855f * i / toPopulate.Length + offsets[2];
+                    float angle = 6.2831855f * i / thirdSegment + offsets[2];
                     float x = x_axis[1];
                     float y = y_axis[2];
                     toPopulate[firstSegment + secondSegment + i] = new Vector3(Mathf.Cos(angle) * x, y, Mathf.Sin(angle) * x);
                 }
             }
             return toPopulate;
-        }*/
-    }
+        }
+    }*/
 }

@@ -77,7 +77,7 @@ namespace ShortcutLib.Shortcut
             Identifiable.NON_SLIMES_CLASS.Add(identifiable);
 
             Registry.AddIdentifiableToAmmo(identifiable);
-            Registry.AddIdentifiableToSilo(identifiable);
+            Registry.AddIdentifiableToSilo(identifiable, SiloStorage.StorageType.CRAFTING);
             Registry.AddIdentifiableToRefinery(identifiable);
             Registry.RegisterVaccable(identifiable, icon, vacColor, name.Replace(" ", "") + "Craft");
             PediaRegistry.RegisterIdentifiableMapping(PediaDirector.Id.RESOURCES, identifiable);

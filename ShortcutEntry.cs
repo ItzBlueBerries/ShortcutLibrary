@@ -33,6 +33,8 @@ namespace ShortcutLib
         public static readonly Gadget.Id TEST_EXTRACTOR;
 
         public static readonly Identifiable.Id TEST_GORDO;
+
+        public static readonly Identifiable.Id TEST_PLORT;
     }
 
     internal class ShortcutEntry : ModEntryPoint
@@ -120,14 +122,16 @@ namespace ShortcutLib
                 Color.yellow,
             });
 
-            Gordo.CreateGordoBase(Identifiable.Id.ROCK_GORDO, Enums.TEST_GORDO, Identifiable.Id.PINK_SLIME, null, "Test Gordo", 1, new List<GameObject>(), new ZoneDirector.Zone[] { ZoneDirector.Zone.REEF });
-            Gordo.ModifyGordoSpawns(Enums.TEST_GORDO, 6);
+            Gordo.CreateGordoBase(Identifiable.Id.PINK_GORDO, Enums.TEST_GORDO, Identifiable.Id.PINK_SLIME, null, "Test Gordo", 1, new ZoneDirector.Zone[] { ZoneDirector.Zone.REEF }, new List<GameObject>());
+            /*Gordo.ModifyGordoSpawns(Enums.TEST_GORDO, 6);
             Gordo.ModifyGordoSpawns(Identifiable.Id.PINK_GORDO, 50);
-            Gordo.ModifyGordoSpawns(Identifiable.Id.TABBY_GORDO, 13);
+            Gordo.ModifyGordoSpawns(Identifiable.Id.TABBY_GORDO, 13);*/
             SRCallbacks.PreSaveGameLoad += delegate (SceneContext sceneContext)
             {
-                Gordo.PositionGordo(Enums.TEST_GORDO, GameObject.Find("zoneREEF/cellReef_GordoIsland/Sector").transform, new Vector3(-98.1f, 6.4f, 11.5f), 0);
+                Gordo.PositionGordo(Enums.TEST_GORDO, Prefab.FindObject("zoneREEF/cellReef_GordoIsland/Sector").transform, new Vector3(-98.1f, 6.4f, 11.5f), 0);
             };
+            Slime.CreatePlortBase(Identifiable.Id.PINK_PLORT, Enums.TEST_PLORT, null, "Test Plort", 0, 100, Color.white);
+            Slime.QuickRecolorPlort(Enums.TEST_PLORT, Color.white, Color.magenta, Color.yellow);
         }
 
         /*public override void PostLoad()

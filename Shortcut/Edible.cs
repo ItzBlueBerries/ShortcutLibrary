@@ -57,6 +57,18 @@ namespace ShortcutLib.Shortcut
             Identifiable.NON_SLIMES_CLASS.Add(identifiable);
 
             Registry.AddIdentifiableToAmmo(identifiable);
+
+            if (isElder)
+            {
+                Registry.AddIdentifiableToSilo(identifiable, SiloStorage.StorageType.ELDER);
+                Registry.AddIdentifiableToSilo(identifiable, SiloStorage.StorageType.FOOD);
+            }
+            else
+                Registry.AddIdentifiableToSilo(identifiable, SiloStorage.StorageType.FOOD);
+
+            Registry.AddIdentifiableToSnare(identifiable);
+            Registry.AddIdentifiableToDrone(identifiable);
+
             Registry.RegisterVaccable(identifiable, icon, vacColor, name.Replace(" ", ""));
             PediaRegistry.RegisterIdentifiableMapping(PediaDirector.Id.RESOURCES, identifiable);
 
@@ -109,6 +121,10 @@ namespace ShortcutLib.Shortcut
             Identifiable.NON_SLIMES_CLASS.Add(identifiable);
 
             Registry.AddIdentifiableToAmmo(identifiable);
+            Registry.AddIdentifiableToSilo(identifiable);
+            Registry.AddIdentifiableToSnare(identifiable);
+            Registry.AddIdentifiableToDrone(identifiable);
+
             Registry.RegisterVaccable(identifiable, icon, vacColor, name.Replace(" ", ""));
             PediaRegistry.RegisterIdentifiableMapping(PediaDirector.Id.RESOURCES, identifiable);
 

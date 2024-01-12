@@ -9,15 +9,31 @@ using UnityEngine.UI;
 
 namespace ShortcutLib.Shortcut
 {
+    /// <summary>
+    /// Methods relating to creating gordos.
+    /// </summary>
     public static class Gordo
     {
-        internal static readonly Dictionary<Identifiable.Id, Vector3[]> gordoSpawnsToPatch = new();
+        // internal static readonly Dictionary<Identifiable.Id, Vector3[]> gordoSpawnsToPatch = new();
 
+        /// <summary>
+        /// Gets a gordo prefab <see cref="GameObject"/> attached to the <see cref="Identifiable.Id"/> given.
+        /// </summary>
+        /// <param name="identifiable">The <see cref="Identifiable.Id"/> to grab the gordo prefab <see cref="GameObject"/> from.</param>
+        /// <returns><see cref="GameObject"/></returns>
         public static GameObject GetGordo(Identifiable.Id identifiable) => Director.Lookup.GetGordo(identifiable);
 
-        public static void ModifyGordoSpawns(Identifiable.Id identifiable, int spawnCount) =>
-            gordoSpawnsToPatch.AddIfDoesNotContain(identifiable, new Vector3[spawnCount]);
+        /*public static void ModifyGordoSpawns(Identifiable.Id identifiable, int spawnCount) =>
+            gordoSpawnsToPatch.AddIfDoesNotContain(identifiable, new Vector3[spawnCount]);*/
 
+        /// <summary>
+        /// Positions a gordo in the world based on the parent <see cref="Transform"/> and position <see cref="Vector3"/>.
+        /// </summary>
+        /// <param name="identifiable">The <see cref="Identifiable.Id"/> of the gordo.</param>
+        /// <param name="parent">The parent <see cref="Transform"/> that the gordo should be parented to.</param>
+        /// <param name="position">The position <see cref="Vector3"/> that the gordo should be positioned at.</param>
+        /// <param name="rotationAngle">The rotation angle <see cref="float"/> of the gordo to rotate in the correct direction. Leave 0 if not needed.</param>
+        /// <returns><see cref="string"/></returns>
         public static string PositionGordo(Identifiable.Id identifiable, Transform parent, Vector3 position, float rotationAngle)
         {
             GameObject instantiatedGordo = GetGordo(identifiable).InstantiateInactive(position, Quaternion.identity, parent, true);
@@ -32,7 +48,19 @@ namespace ShortcutLib.Shortcut
             return persistentId;
         }
 
-        public static GameObject CreateGordoBase(Identifiable.Id baseIdentifiable, Identifiable.Id identifiable, Identifiable.Id slimeIdentifiable, Sprite icon, string name, int feedCount, List<GameObject> gordoRewards, ZoneDirector.Zone[] nativeZones)
+        /// <summary>
+        /// Creates a starting base for a gordo.
+        /// </summary>
+        /// <param name="baseIdentifiable">The base <see cref="Identifiable.Id"/> that the gordo copies the prefab <see cref="GameObject"/> from.</param>
+        /// <param name="identifiable">The <see cref="Identifiable.Id"/> of the gordo.</param>
+        /// <param name="slimeIdentifiable">The slime <see cref="Identifiable.Id"/> that the gordo is based on.</param>
+        /// <param name="icon">The icon <see cref="Sprite"/> of the gordo.</param>
+        /// <param name="name">The name <see cref="string"/> of the gordo.</param>
+        /// <param name="feedCount">The feed count <see cref="int"/> of the gordo.</param>
+        /// <param name="nativeZones">The native zones <see cref="ZoneDirector.Zone[]"/> of the gordo.</param>
+        /// <param name="gordoRewards">The list of rewards for popping the gordo. Anything unfilled from the maximum rewards is automatically replaced with slimes.</param>
+        /// <returns><see cref="GameObject"/></returns>
+        public static GameObject CreateGordoBase(Identifiable.Id baseIdentifiable, Identifiable.Id identifiable, Identifiable.Id slimeIdentifiable, Sprite icon, string name, int feedCount, ZoneDirector.Zone[] nativeZones, List<GameObject> gordoRewards)
         {
             GameObject prefab = Prefab.ObjectCopy(GetGordo(baseIdentifiable));
             prefab.name = "gordo" + name.Replace(" ", "").Replace("Gordo", "");
