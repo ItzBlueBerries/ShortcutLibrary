@@ -105,7 +105,8 @@ namespace ShortcutLib.Shortcut
             GameObject prefab = Prefab.ObjectCopy(GetSpawnResource(baseIdentifiable));
 
             string toString = identifiable.ToString();
-            prefab.name = toString.ToUpper().Contains("TREE") ? "tree" + name.Replace(" ", "") :
+            prefab.name = 
+                toString.ToUpper().Contains("TREE") ? "tree" + name.Replace(" ", "") :
                 (toString.ToUpper().Contains("PATCH") ? "patch" + name.Replace(" ", "") : "garden" + name.Replace(" ", ""));
 
             SpawnResource spawnResource = prefab.GetComponent<SpawnResource>();

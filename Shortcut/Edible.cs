@@ -32,7 +32,13 @@ namespace ShortcutLib.Shortcut
         public static (GameObject, Material) CreateBirdBase(Identifiable.Id baseIdentifiable, Identifiable.Id identifiable, Sprite icon, string name, Texture2D rampRed, Texture2D rampGreen, Texture2D rampBlue, Texture2D rampBlack, Color vacColor, bool isChick = false, bool isElder = false)
         {
             GameObject prefab = Prefab.QuickCopy(baseIdentifiable);
-            prefab.name = "bird" + name.Replace(" ", "");
+
+            string toString = identifiable.ToString();
+            prefab.name = 
+                toString.ToUpper().Contains("CHICK") ? "birdChick" + name.Replace("Chick", "").Replace(" ", "") :
+                (toString.ToUpper().Contains("HEN") ? "birdHen" + name.Replace("Hen", "").Replace(" ", "") :
+                (toString.ToUpper().Contains("ROOSTER") ? "birdRooster" + name.Replace("Rooster", "").Replace(" ", "") : "food" + name.Replace(" ", "")));
+
             prefab.GetComponent<Identifiable>().id = identifiable;
 
             SkinnedMeshRenderer skinnedMeshRenderer = prefab.GetComponentInChildren<Animator>().transform.Find("mesh_body1").GetComponent<SkinnedMeshRenderer>();
@@ -42,6 +48,14 @@ namespace ShortcutLib.Shortcut
             material.SetTexture("_RampBlue", rampBlue);
             material.SetTexture("_RampBlack", rampBlack);
             skinnedMeshRenderer.sharedMaterial = material;
+
+            MeshRenderer[] meshRenderers = new MeshRenderer[2]
+            {
+                skinnedMeshRenderer.transform.parent.transform.Find("root/handle_cog/loc_core/mesh_body LOW").GetComponent<MeshRenderer>(),
+                skinnedMeshRenderer.transform.parent.transform.Find("root/handle_cog/loc_core/mesh_body MED").GetComponent<MeshRenderer>(),
+            };
+            foreach (var renderer in meshRenderers)
+                renderer.sharedMaterial = material;
 
             if (isChick)
                 Identifiable.CHICK_CLASS.Add(identifiable);
@@ -97,8 +111,9 @@ namespace ShortcutLib.Shortcut
             GameObject prefab = Prefab.QuickCopy(baseIdentifiable);
 
             string toString = identifiable.ToString();
-            prefab.name = toString.ToUpper().Contains("FRUIT") ? "fruit" + toString.Replace(" ", "") :
-                (toString.ToUpper().Contains("VEGGIE") ? "veggie" + toString.Replace(" ", "") : "food" + toString.Replace(" ", ""));
+            prefab.name = 
+                toString.ToUpper().Contains("FRUIT") ? "fruit" + name.Replace(" ", "") :
+                (toString.ToUpper().Contains("VEGGIE") ? "veggie" + name.Replace(" ", "") : "food" + name.Replace(" ", ""));
 
             prefab.GetComponent<Identifiable>().id = identifiable;
 

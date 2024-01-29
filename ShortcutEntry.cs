@@ -28,6 +28,8 @@ namespace ShortcutLib
 
         public static readonly Identifiable.Id TEST_FRUIT;
 
+        public static readonly Identifiable.Id TEST_HEN;
+
         public static readonly SpawnResource.Id TEST_PATCH;
 
         public static readonly Gadget.Id TEST_EXTRACTOR;
@@ -70,7 +72,9 @@ namespace ShortcutLib
                     weight = 1
                 }
             });
-            Resource.CreateResourceBase(Identifiable.Id.POGO_FRUIT, Enums.TEST_FRUIT, null, "Test", Color.white);
+            // Resource.CreateResourceBase(Identifiable.Id.POGO_FRUIT, Enums.TEST_FRUIT, null, "Test", Color.white);
+            Edible.CreateFoodBase(Identifiable.Id.POGO_FRUIT, Enums.TEST_FRUIT, null, "Test", null, null, null, null, Color.white, false, true);
+            Edible.CreateBirdBase(Identifiable.Id.HEN, Enums.TEST_HEN, null, "Test Hen", null, null, null, null, Color.black);
             var g = Resource.CreateSpawnResourceBase(SpawnResource.Id.POGO_TREE, Enums.TEST_PATCH, Enums.TEST_FRUIT, "Test", new GameObject[]
             {
                 Prefab.GetPrefab(Enums.TEST_FRUIT)

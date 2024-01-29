@@ -41,7 +41,7 @@
     </Reference>
     <Reference Include="Assembly-CSharp-Publicized, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Users\Jay\Downloads\Assembly-CSharp-Publicized.dll</HintPath>
+      <HintPath>..\..\..\..\User\Documents+\Random\Assembly-CSharp-Publicized.dll</HintPath>
     </Reference>
     <Reference Include="SRML, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

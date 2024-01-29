@@ -84,16 +84,13 @@ namespace ShortcutLib.Shortcut
             PlortRegistry.AddEconomyEntry(identifiable, value, saturation);
             return prefab;
         }
-        /*
+
         public static (GameObject, SlimeDefinition, SlimeAppearance) CreateSlimeBase(Identifiable.Id baseIdentifiable, Identifiable.Id identifiable, string name, Sprite newIcon, Color vacColor, Color SplatColor1, [Optional] Color SplatColor2, [Optional] Color SplatColor3, [Optional] Color AmmoColor, Vacuumable.Size vacSetting = Vacuumable.Size.NORMAL)
         {
             SlimeDefinition slimeDefinition = ScriptableObject.CreateInstance<SlimeDefinition>();
-            slimeDefinition.name = name.Replace("Slime", "");
+            slimeDefinition.name = name.Replace("Slime", "").Replace(" ", "");
             slimeDefinition.Name = slimeDefinition.name;
             slimeDefinition.IdentifiableId = identifiable;
-
-            SlimeDefinition slimeDefinition = (SlimeDefinition)Prefab.Instantiate(GetSlimeDefinition(baseIdentifiable));
-            SlimeAppearance slimeAppearance = (SlimeAppearance)Prefab.Instantiate(GetSlimeDefinition(baseIdentifiable).AppearancesDefault[0]);
 
             // DEFINITION
             slimeDefinition.BaseModule = Get<GameObject>("moduleSlimeStandard");
@@ -106,28 +103,7 @@ namespace ShortcutLib.Shortcut
             // PREFAB
             sunBearSlime.prefab = PrefabUtils.CopyPrefab(Get<GameObject>("slimePink"));
             sunBearSlime.prefab.name = "slimeSunBear";
-            sunBearSlime.PrefabScale = 1.5f;
-            sunBearSlime.prefab.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
 
-            sunBearSlime.prefab.AddComponent<SBGeneralizedBehaviour>();
-            // sunBearSlime.prefab.AddComponent<SunBearEnvironmental>();
-            sunBearSlime.prefab.AddComponent<SunBearReproduction>();
-            // sunBearSlime.prefab.AddComponent<SunBearIsolation>();
-            // sunBearSlime.prefab.AddComponent<SunBearTentacleBite>();
-            sunBearSlime.prefab.AddComponent<SunBearProvide>();
-            sunBearSlime.prefab.AddComponent<SunBearHarvest>();
-            sunBearSlime.prefab.AddComponent<SunBearAttack>();
-            sunBearSlime.prefab.AddComponent<SunBearSavage>();
-            sunBearSlime.prefab.AddComponent<SunBearCache>();
-            sunBearSlime.prefab.AddComponent<SunBearGoto>();
-
-            sunBearSlime.prefab.AddComponent<GotoPlayer>().PlayerIdentifiableType = Get<IdentifiableType>("Player");
-            sunBearSlime.prefab.AddComponent<AttackPlayer>()._playerIdentifiableType = Get<IdentifiableType>("Player");
-            sunBearSlime.prefab.GetComponent<AttackPlayer>()._damageSource = LocalInstances.sunBearAttack;
-            sunBearSlime.prefab.GetComponent<AttackPlayer>().DamagePerAttack = 30;
-            /*sunBearSlime.prefab.GetComponent<SlimeFeral>().feralLifetimeHours = float.PositiveInfinity;
-            sunBearSlime.prefab.GetComponent<SlimeFeral>().dynamicToFeral = false;*/
-        /*
             sunBearSlime.prefab.GetComponent<Identifiable>().identType = sunBearSlime;
             sunBearSlime.prefab.GetComponent<SlimeEat>().SlimeDefinition = sunBearSlime;
             sunBearSlime.prefab.GetComponent<PlayWithToys>().SlimeDefinition = sunBearSlime;
@@ -136,58 +112,7 @@ namespace ShortcutLib.Shortcut
             sunBearSlime.prefab.GetComponent<SlimeVarietyModules>().SlimeModules = sunBearSlime.SlimeModules;
             sunBearSlime.prefab.GetComponent<Vacuumable>().size = Vacuumable.Size.LARGE;
 
-            sunBearSlime.prefab.GetComponent<SlimeHealth>().MaxHealth = 40;
-            sunBearSlime.prefab.GetComponent<FleeThreats>().FearProfile = LocalInstances.sunBearSlimeFearProfile;
-            sunBearSlime.prefab.GetComponent<SlimeRandomMove>()._maxJump = 4;
-
-            if (SunBearPreferences.IsRealisticMode())
-            {
-                sunBearSlime.prefab.GetComponent<SlimeRandomMove>().ScootSpeedFactor = 2.5f;
-                sunBearSlime.prefab.GetComponent<GotoConsumable>().PursuitSpeedFactor = 2.5f;
-            }
-            else
-            {
-                sunBearSlime.prefab.GetComponent<SlimeRandomMove>().ScootSpeedFactor = 2;
-                sunBearSlime.prefab.GetComponent<GotoConsumable>().PursuitSpeedFactor = 2;
-            }
-
-            GameObject instantiatedTriggers = UnityEngine.Object.Instantiate(sunBearTriggers);
-            instantiatedTriggers.transform.parent = sunBearSlime.prefab.transform;
-
-            if (SunBearPreferences.IsCasualMode())
-                UnityEngine.Object.Destroy(sunBearSlime.prefab.transform.Find("SunBearTriggers(Clone)/SunBearProtectionTrigger").gameObject);
-
-            foreach (Il2CppSystem.Type excludedComponent in grownExcludedComponents)
-            {
-                if (excludedComponent == null)
-                    continue;
-
-                if (sunBearSlime.prefab.GetComponent(excludedComponent))
-                    UnityEngine.Object.Destroy(sunBearSlime.prefab.GetComponent(excludedComponent));
-            }
-
-            if (SunBearPreferences.IsCasualMode())
-            {
-                foreach (Il2CppSystem.Type excludedComponent in casualExcludedComponents)
-                {
-                    if (excludedComponent == null)
-                        continue;
-
-                    if (SunBearPreferences.IsCasualWSavageMode() && excludedComponent == Il2CppType.Of<SunBearSavage>())
-                        continue;
-
-                    if (sunBearSlime.prefab.GetComponent(excludedComponent))
-                        UnityEngine.Object.Destroy(sunBearSlime.prefab.GetComponent(excludedComponent));
-                }
-            }
-
-            if (SunBearPreferences.IsRealisticMode() && SunBearPreferences.IsRealisticWOSavageMode())
-                UnityEngine.Object.Destroy(sunBearSlime.prefab.GetComponent<SunBearSavage>());
-
-            UnityEngine.Object.Destroy(sunBearSlime.prefab.GetComponent<AweTowardsLargos>());
             UnityEngine.Object.Destroy(sunBearSlime.prefab.GetComponent<PinkSlimeFoodTypeTracker>());
-            UnityEngine.Object.Destroy(sunBearSlime.prefab.GetComponent<ColliderTotemLinkerHelper>());
-            UnityEngine.Object.Destroy(sunBearSlime.prefab.transform.FindChild("TotemLinker(Clone)").gameObject);
 
             // DIET
             sunBearSlime.Diet = UnityEngine.Object.Instantiate(Get<SlimeDefinition>("Pink")).Diet;
@@ -196,14 +121,14 @@ namespace ShortcutLib.Shortcut
             sunBearSlime.Diet.ProduceIdents = new IdentifiableType[] { sunBearPlort };
             sunBearSlime.Diet.AdditionalFoodIdents = new IdentifiableType[]
             {
-                                Get<IdentifiableType>("Chick"),
-                                Get<IdentifiableType>("StonyChick"),
-                                Get<IdentifiableType>("BriarChick"),
-                                Get<IdentifiableType>("SeaChick"),
-                                Get<IdentifiableType>("ThunderChick"),
-                                Get<IdentifiableType>("PaintedChick"),
-                                Get<IdentifiableType>("WildHoneyCraft"),
-                                Get<IdentifiableType>("SunSapCraft")
+                Get<IdentifiableType>("Chick"),
+                Get<IdentifiableType>("StonyChick"),
+                Get<IdentifiableType>("BriarChick"),
+                Get<IdentifiableType>("SeaChick"),
+                Get<IdentifiableType>("ThunderChick"),
+                Get<IdentifiableType>("PaintedChick"),
+                Get<IdentifiableType>("WildHoneyCraft"),
+                Get<IdentifiableType>("SunSapCraft")
             };
             sunBearSlime.Diet.FavoriteIdents = new IdentifiableType[] { Get<IdentifiableType>("WildHoneyCraft") };
             sunBearSlime.Diet.RefreshEatMap(SRSingleton<GameContext>.Instance.SlimeDefinitions, sunBearSlime);
@@ -219,30 +144,6 @@ namespace ShortcutLib.Shortcut
             slimeAppearanceApplicator.Appearance = slimeAppearance;
             slimeAppearanceApplicator.SlimeDefinition = sunBearSlime;
 
-            // APPEARANCE STRUCTURES
-            // EARS
-            GameObject slimeAppearanceObject = new GameObject("sunbear_ears");
-            slimeAppearanceObject.Prefabitize();
-            slimeAppearanceObject.hideFlags |= HideFlags.HideAndDontSave;
-
-            slimeAppearanceObject.AddComponent<SkinnedMeshRenderer>().sharedMesh = LocalAssets.sunBearEars;
-
-            slimeAppearanceObject.AddComponent<SlimeAppearanceObject>().hideFlags |= HideFlags.HideAndDontSave;
-            slimeAppearanceObject.GetComponent<SlimeAppearanceObject>().RootBone = SlimeAppearance.SlimeBone.JIGGLE_TOP;
-            slimeAppearanceObject.GetComponent<SlimeAppearanceObject>().ParentBone = SlimeAppearance.SlimeBone.JIGGLE_BACK;
-            slimeAppearanceObject.GetComponent<SlimeAppearanceObject>().AttachedBones = new SlimeAppearance.SlimeBone[0].AddDefaultBones();
-            slimeAppearanceObject.GetComponent<SlimeAppearanceObject>().IgnoreLODIndex = true;
-            // UnityEngine.Object.DontDestroyOnLoad(slimeAppearanceObject.GetComponent<SlimeAppearanceObject>());
-
-            slimeAppearance.Structures = slimeAppearance.Structures.ToArray().AddToArray(new SlimeAppearanceStructure(slimeAppearance.Structures[0]));
-
-            slimeAppearance.Structures[2].Element = ScriptableObject.CreateInstance<SlimeAppearanceElement>();
-            slimeAppearance.Structures[2].Element.name = "SunBearEars";
-            slimeAppearance.Structures[2].Element.Name = "Sun Bear Ears";
-            slimeAppearance.Structures[2].Element.Prefabs = new SlimeAppearanceObject[] { slimeAppearanceObject.GetComponent<SlimeAppearanceObject>() };
-            slimeAppearance.Structures[2].Element.Type = SlimeAppearanceElement.ElementType.EARS;
-            slimeAppearance.Structures[2].SupportsFaces = false;
-
             // REST OF APPEARANCE
             Material slimeMaterial = UnityEngine.Object.Instantiate(slimeAppearance.Structures[0].DefaultMaterials[0]);
             slimeMaterial.hideFlags |= HideFlags.HideAndDontSave;
@@ -252,29 +153,7 @@ namespace ShortcutLib.Shortcut
             slimeMaterial.SetColor("_BottomColor", sunBearPalette[0]);
             slimeMaterial.SetColor("_SpecColor", sunBearPalette[1]);
 
-            slimeMaterial.SetTexture("_ColorMask", LocalAssets.maskSunBearMulticolor);
-            slimeMaterial.SetColor("_RedTopColor", sunBearPalette[0]);
-            slimeMaterial.SetColor("_RedMiddleColor", sunBearPalette[1]);
-            slimeMaterial.SetColor("_RedBottomColor", sunBearPalette[0]);
-            slimeMaterial.SetColor("_GreenTopColor", sunBearPalette[2]);
-            slimeMaterial.SetColor("_GreenMiddleColor", sunBearPalette[3]);
-            slimeMaterial.SetColor("_GreenBottomColor", sunBearPalette[2]);
-
-            var slimeKeywords = slimeMaterial.GetShaderKeywords().ToList();
-            slimeKeywords.Remove("_BODYCOLORING_DEFAULT");
-            slimeKeywords.Add("_BODYCOLORING_MULTI");
-            slimeMaterial.SetShaderKeywords(slimeKeywords.ToArray());
-
-            Material earsMaterial = UnityEngine.Object.Instantiate(slimeMaterial);
-            earsMaterial.hideFlags |= HideFlags.HideAndDontSave;
-            earsMaterial.name = "slimeSunBearEarsBase";
-            earsMaterial.SetTexture("_ColorMask", LocalAssets.maskSunBearEarsMulticolor);
-            earsMaterial.SetColor("_RedTopColor", sunBearPalette[0]);
-            earsMaterial.SetColor("_RedMiddleColor", sunBearPalette[1]);
-            earsMaterial.SetColor("_RedBottomColor", sunBearPalette[0]);
-
             slimeAppearance.Structures[0].DefaultMaterials[0] = slimeMaterial;
-            slimeAppearance.Structures[2].DefaultMaterials[0] = earsMaterial;
 
             slimeAppearance._face = UnityEngine.Object.Instantiate(Get<SlimeAppearance>("TabbyDefault").Face);
             slimeAppearance.Face.name = "faceSlimeSunBear";
@@ -320,13 +199,11 @@ namespace ShortcutLib.Shortcut
             };
             sunBearSlime.AppearancesDefault = new SlimeAppearance[] { slimeAppearance };
             sunBearSlime.prefab.hideFlags |= HideFlags.HideAndDontSave;
-#endregion
 
             if (!SRSingleton<GameContext>.Instance.SlimeDefinitions.Slimes.FirstOrDefault(x => x == sunBearSlime))
                 SRSingleton<GameContext>.Instance.SlimeDefinitions.Slimes = SRSingleton<GameContext>.Instance.SlimeDefinitions.Slimes.AddItem(sunBearSlime).ToArray();
             SRSingleton<GameContext>.Instance.SlimeDefinitions._slimeDefinitionsByIdentifiable.TryAdd(sunBearSlime, sunBearSlime);
             return (slimeDefinition, slimeObject, slimeAppearance);
         }
-        */
     }
 }
